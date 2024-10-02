@@ -1,6 +1,7 @@
 // src/components/TouristPlaces.js
-import React from 'react';
+import React, {useEffect} from 'react';
 import { useLocation } from 'react-router-dom';
+import HeroBanner from './TouristPlaceComponent/HeroBanner';
 
 const TouristPlaces = () => {
   const location = useLocation();
@@ -19,7 +20,8 @@ const TouristPlaces = () => {
 
   return (
     <div>
-      <h1>Tourist Places in {stateName}</h1>
+        <HeroBanner stateName={stateName}/>
+      <h1>Welcome to {stateName}</h1>
       <ul>
         {places.map((place, idx) => <li key={idx}>{place}</li>)}
       </ul>
