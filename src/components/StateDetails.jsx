@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { GoogleMap, LoadScript, Polygon, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, LoadScript, Polygon, InfoWindow, useJsApiLoader, Marker } from '@react-google-maps/api';
 import HeroBanner from './TouristPlaceComponent/HeroBanner';
 import apiHelper from '../helpers/apicalls';
 import './TouristPlaceComponent/StateDetails.scss';
 import axios from 'axios';
 import constants from '../helpers/constants';
+import { Badge, Button, Card, CardBody } from 'reactstrap';
 
 const containerStyle = {
   width: '100%',
@@ -162,7 +163,7 @@ const StateDetails = () => {
       </div>
 
       {/* Places Section */}
-      <div className="container mt-5">
+      {/* <div className="container mt-5">
         <h2 className="mb-4">Famous Places to Explore in {stateData?.name}</h2>
         <div className="row">
           {stateData?.places?.map((place, index) => (
@@ -182,7 +183,72 @@ const StateDetails = () => {
             </div>
           ))}
         </div>
+      </div> */}
+
+      <div className="container-fluid">
+        {/* Header */}
+        <div
+          className="h-[300px] bg-cover bg-center flex items-center justify-center text-white text-center"
+          style={{
+            backgroundImage:
+              "url(https://images.unsplash.com/photo-1601987077495-30440bc65c4b)",
+          }}
+        >
+        </div>
+
+        {/* Cards Section */}
+        <div className="row">
+          {stateData?.places?.map((place) => (
+            <div className='col-md-4'>
+              <Card key={place._id} className="rounded-2xl shadow-md hover:shadow-xl transition">
+                <img
+                  src={place.thumbImage}
+                  alt={place.name}
+                  className="h-48 w-full object-cover rounded-t-2xl"
+                />
+                <CardBody className="p-4">
+                  <h2 className="text-xl font-semibold">{place.name}</h2>
+                  <p className="text-sm text-gray-600 mt-1">{place.desc}</p>
+                  <div className="flex items-center text-sm text-muted-foreground mt-2">
+                    {/* <Mappin className="w-4 h-4 mr-1" /> */}
+                    {place.state}
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {place.tags.map((tag, idx) => (
+                      <Badge key={idx} className="text-xs bg-blue-100 text-blue-800">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Extra Info */}
+                  <div className="mt-3 text-sm text-gray-700">
+                    <p><strong>Entry:</strong> {place.entryFee}</p>
+                    <p><strong>Best Time:</strong> {place.bestTimeToVisit}</p>
+                  </div>
+
+                  {/* Action */}
+                  <Button className="w-full mt-4" variant="default">
+                    View Details
+                  </Button>
+                </CardBody>
+              </Card>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {stateData.places.map((place, index) => (
+        place?.coordinates?.coordinates?.length && (
+          <Marker
+            key={index}
+            position={{ lat: parseFloat(place.place?.coordinates?.coordinates[0]), lng: parseFloat(place?.coordinates?.coordinates[1]) }}
+            onClick={() => handlePlaceClick(place)}
+          />
+        )
+      ))}
     </div>
   ) : (
     <div>Loading map...</div>

@@ -1,0 +1,196 @@
+.india-map-interactive {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  height: 100vh;
+  .map-container {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    height: 60%;
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    // Custom styling for geography elements
+    path {
+      transition: all 0.3s ease;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+
+      &:hover {
+        filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.4));
+      }
+    }
+  }
+
+  // Tooltip styling
+  .state-tooltip {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    animation: fadeIn 0.2s ease;
+
+    .tooltip-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+
+      h4 {
+        margin: 0 0 4px 0;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      p {
+        margin: 0;
+        font-size: 13px;
+        opacity: 0.9;
+      }
+    }
+
+    // Arrow for tooltip
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -6px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 6px solid #667eea;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Map Legend
+  .map-legend {
+    margin-top: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 16px;
+    color: white;
+    text-align: center;
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0 0 20px 0;
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    .legend-items {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      flex-wrap: wrap;
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 500;
+
+        .legend-color {
+          width: 30px;
+          height: 20px;
+          border-radius: 6px;
+          border: 2px solid white;
+          display: inline-block;
+
+          &.default {
+            background: #e0e7ff;
+          }
+
+          &.hover {
+            background: #818cf8;
+          }
+
+          &.active {
+            background: #6366f1;
+          }
+        }
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    .map-container {
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .state-tooltip {
+      .tooltip-content {
+        padding: 10px 16px;
+
+        h4 {
+          font-size: 16px;
+        }
+
+        p {
+          font-size: 12px;
+        }
+      }
+    }
+
+    .map-legend {
+      padding: 16px;
+
+      h4 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+
+      .legend-items {
+        gap: 15px;
+
+        .legend-item {
+          font-size: 13px;
+
+          .legend-color {
+            width: 25px;
+            height: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .map-legend {
+      .legend-items {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+    }
+  }
+}

@@ -1,37 +1,50 @@
 import axios from "axios"
-import constants from "./constants"
+import {constants} from "./constants"
 
-
-const apiHelper = async ({url, method = 'GET', data = null, headers = {}}) => {
+const apiHelper = async ({ url, method = 'GET', data = null, headers = {} }) => {
+    console.log({API_URL: constants.API_URL})
     try {
-        const options = {
-            method,
+        const config = {
+            url: constants.API_URL + url, // Full URL
+            method: method.toUpperCase(), // Ensure method is uppercase
             headers: {
                 'Content-Type': 'application/json',
                 ...headers,
             },
         };
 
-        if (data) {
-            options.body = JSON.stringify(data); // Stringify the data for POST/PUT requests
+        if (data && ['POST', 'PUT', 'PATCH'].includes(config.method)) {
+            config.data = data; // Axios expects the payload in the 'data' property
         }
 
-        const response = await axios(url, options);
-        console.log("url : ", url ,", response  ::: ", response )
-        if (!response.ok) {
-            // If response is not OK, throw an error
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        console.log("CALLING API WITH CONFIG :: ", config);
 
-        const result = await response.json(); // Assuming API returns JSON
-        return result;
+        const response = await axios(config);
+
+        console.log("API RESPONSE :: ", response);
+
+        return response.data;
+
     } catch (error) {
-        console.error('Error in API call:', error);
-        throw error; // Optionally rethrow to handle it in the component
-    }
-}
+        console.error('Error in API call:', url, error);
+        if (error.response) {
+            console.error('Error Response Data:', error.response.data);
+            console.error('Error Response Status:', error.response.status);
+            console.error('Error Response Headers:', error.response.headers);
 
-let toExport = {
-    apiHelper
-}
-export default toExport
+            throw {
+                message: `HTTP error! Status: ${error.response.status}`,
+                status: error.response.status,
+                data: error.response.data,
+            };
+        } else if (error.request) {
+            console.error('Error Request:', error.request);
+            throw new Error('Network error: No response received from server.');
+        } else {
+            console.error('Error Message:', error.message);
+            throw new Error(`API setup error: ${error.message}`);
+        }
+    }
+};
+
+export default { apiHelper }
