@@ -36,7 +36,7 @@ const App = () => {
       <Container sx={{marginTop: "150px"}}>
         <Routes>
           <Route path="/" element={<IndiaMap onStateClick={handleStateClick} />} />
-          <Route path="/:stateName" element={<StateDetails />} />
+          <Route path="/state/:stateName" element={<StateDetails />} />
           <Route path="/itineraryPlanner" element={<ItineraryPlanner />} />
         </Routes>
       </Container>
