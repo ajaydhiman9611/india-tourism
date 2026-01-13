@@ -18,7 +18,7 @@ const App = () => {
   return (<>
       <header className="text-center p-2" style={{ zIndex: 1000, position: "fixed", top: 0, width: "100%", backgroundColor: 'black', color: ""}} >
       <Container  sx={{ mt: 1, mb: 1, pl: 1 }}>
-        <Grid container spacing={12}>
+        <Grid container spacing={12} sx={{alignItems: "center"}}>
           <Grid item size={3} sx={{justifyContent: "flex-start"}}>
             <h6 style={{color: "white"}} className="display-6">Indian Tourism</h6>
           </Grid>

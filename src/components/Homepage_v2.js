@@ -188,57 +188,54 @@ const IndiaMapInteractive = () => {
             </Geographies>
           </ZoomableGroup>
         </ComposableMap> */}
-<ComposableMap
-      projection="geoMercator"
-      projectionConfig={{ scale: 1100 }}
-      width={800}
-      height={700}
-      style={{ width: '100%', height: '100%' }}
-    >
-      <ZoomableGroup
-        center={[78.9629, 23.5937]}
-        zoom={1}
-      >
-        <Geographies geography={geoJsonData}>
-          {({ geographies }) =>
-            geographies.map((geo) => {
-              const stateName = getStateName(geo);
-              const isHovered = hoveredState === stateName;
+        <ComposableMap
+            projection="geoMercator"
+            projectionConfig={{ scale: 1100 }}
+            width={800}
+            height={700}
+            style={{ width: '100%', height: '100%' }}
+        >
+            <ZoomableGroup
+                center={[78.9629, 23.5937]}
+                zoom={1}
+            >
+                <Geographies geography={geoJsonData}>
+                {({ geographies }) =>
+                    geographies.map((geo) => {
+                    const stateName = getStateName(geo);
+                    const isHovered = hoveredState === stateName;
 
-              return (
-                <Geography
-                  key={geo.rsmKey}
-                  geography={geo}
-                  onMouseEnter={(e) => handleMouseEnter(geo, e)}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => handleStateClick(geo)}
-                  style={{
-                    default: {
-                      fill: isHovered ? '#818cf8' : '#e0e7ff',
-                      stroke: '#6366f1',
-                      strokeWidth: 0.75,
-                      outline: 'none'
-                    },
-                    hover: {
-                      fill: '#818cf8',
-                      stroke: '#4f46e5',
-                      strokeWidth: 1.5,
-                      cursor: 'pointer'
-                    },
-                    pressed: {
-                      fill: '#6366f1',
-                      stroke: '#4338ca',
-                      strokeWidth: 2
-                    }
-                  }}
-                />
-              );
-            })
-          }
-        </Geographies>
-      </ZoomableGroup>
-    </ComposableMap>
+                    return <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onMouseEnter={(e) => handleMouseEnter(geo, e)}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        onClick={() => handleStateClick(geo)}
+                        style={{
+                            default: {
+                                fill: isHovered ? '#818cf8' : '#e0e7ff',
+                                stroke: '#6366f1',
+                                strokeWidth: 0.75,
+                                outline: 'none'
+                            },
+                            hover: {
+                                fill: '#818cf8',
+                                stroke: '#4f46e5',
+                                strokeWidth: 1.5,
+                                cursor: 'pointer'
+                            },
+                            pressed: {
+                                fill: '#6366f1',
+                                stroke: '#4338ca',
+                                strokeWidth: 2
+                            }
+                        }}
+                        />
+                })}
+                </Geographies>
+            </ZoomableGroup>
+        </ComposableMap>
         {/* Tooltip */}
         {hoveredState && hoveredState !== 'Unknown State' && (
           <div
