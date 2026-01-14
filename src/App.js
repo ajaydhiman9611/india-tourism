@@ -41,7 +41,7 @@ const App = () => {
         </Routes>
       </Container>
       <footer className="text-center p-2 pt-3" style={{ zIndex: 1, position: "fixed", bottom: 0, width: "100%", backgroundColor: '#f8f9fa', borderTop: '1px solid #e7e7e7'}}>
-        <p>© {new Date().getFullYear()} Indian Tourism. All rights reserved.</p>
+        <p style={{marginBottom: "0px"}}>© {new Date().getFullYear()} Indian Tourism. All rights reserved.</p>
       </footer>
     </>
   );

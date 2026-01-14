@@ -41,8 +41,10 @@ const StateDetails = () => {
   const [stateData, setStateData] = useState(null);
   const [stateGeoJson, setStateGeoJson] = useState(null);
   const [mapCenter, setMapCenter] = useState([78.9629, 20.5937]);
-  const [mapZoom, setMapZoom] = useState(2.5);
+  const [mapZoom, setMapZoom] = useState(5);
   const [selectedPlace, setSelectedPlace] = useState(null);
+
+  const [currentZoom, setCurrentZoom] = useState(mapZoom);
 
   /* ---------- FETCH STATE DATA ---------- */
   useEffect(() => {
@@ -85,9 +87,14 @@ const StateDetails = () => {
     setMapCenter([Number(lat), Number(lng)]);
   };
 
-  if (!stateGeoJson || !stateData) return <div>Loading map…</div>;
-  console.log("PLACES:", stateData.places);
+  const getMarkerRadius = (zoom) => {
+    console.log("zoom :: ", zoom)
+    return Math.max(1, 6 / zoom);
+  }
 
+  if (!stateGeoJson || !stateData) return <div>Loading map…</div>;
+  
+  console.log("PLACES:", stateData.places);
   return (
     <div>
       {/* ---------- HERO ---------- */}
@@ -96,78 +103,14 @@ const StateDetails = () => {
         style={{ backgroundImage: `url(${stateData.heroImage})` }}
       >
         <div className="overlay">
-          <h1>{stateData.name}</h1>
+          <h1>Welcome to {stateData.name}</h1>
         </div>
       </div>
 
       {/* ---------- MAP ---------- */}
       <div className="map-section">
-        <ComposableMap
-          projection="geoMercator"
-          projectionConfig={{ scale: 1200 }}
-          style={{ width: "100%", height: "500px" }}
-        >
-          <ZoomableGroup center={mapCenter} zoom={mapZoom}>
-            {/* STATE */}
-            <Geographies geography={stateGeoJson}>
-              {({ geographies }) =>
-                geographies.map((geo) => (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    style={{
-                      default: {
-                        fill: "#dcfce7",
-                        stroke: "#166534",
-                        outline: "none"
-                      },
-                      hover: { fill: "#bbf7d0" },
-                      pressed: { fill: "#86efac" }
-                    }}
-                  />
-                ))
-              }
-            </Geographies>
-
-            {/* PLACES */}
-            {stateData.places?.map((place, idx) => {
-              const geoCoords = place.coordinates?.coordinates;
-              
-              if (!geoCoords || geoCoords.length !== 2) return null;
-              const [lat, lng] = geoCoords;
-              console.log({place}, {lat, lng})
-
-              return (
-                <Marker
-                  key={place._id}
-                  coordinates={[
-                    lat, lng
-                  ]}
-                >
-                  <circle
-                    r={3}
-                    fill="#ef4444"
-                    data-tooltip-id="place-tooltip"
-                    data-tooltip-content={place.name}
-                    style={{cursor: "pointer"}}
-                  />
-                  {/* <text
-                    textAnchor="middle"
-                    y={-10}
-                    style={{ fontFamily: "system-ui", fill: "#5D5A6D", fontSize: "10px" }}
-                  >
-                    {place.name}
-                  </text> */}
-
-                </Marker>
-              );
-            })}
-            {/* <Tooltip id="place-tooltip" /> */}
-          </ZoomableGroup>
-        </ComposableMap>
+        {renderStateMap()}
         <Tooltip id="place-tooltip" place="top" />
-
-        {/* ---------- TOOLTIP ---------- */}
         {selectedPlace && (
           <div className="state-tooltip" style={{background: "lightgreen", padding: "10px"}}>
             <img src={selectedPlace.thumbImage} alt={selectedPlace.name} />
@@ -181,7 +124,7 @@ const StateDetails = () => {
       </div>
 
       {/* ---------- PLACES CARDS ---------- */}
-      <div className="container mt-4">
+      <div className="container mt-4 pb-5">
         <div className="row">
           {stateData.places?.map((place) => (
             <div className="col-md-4 mb-4" key={place._id}>
@@ -213,6 +156,70 @@ const StateDetails = () => {
       </div>
     </div>
   );
+
+  function renderStateMap() {
+    return <ComposableMap
+      projection="geoMercator"
+      projectionConfig={{ scale: 1200 }}
+      style={{ width: "100%", height: "500px" }}
+    >
+      <ZoomableGroup center={mapCenter} zoom={mapZoom} onMoveEnd={({ zoom }) => setCurrentZoom(zoom)}>
+        {/* STATE */}
+        <Geographies geography={stateGeoJson}>
+          {({ geographies }) => geographies.map((geo) => (
+            <Geography
+              key={geo.rsmKey}
+              geography={geo}
+              style={{
+                default: {
+                  fill: "#dcfce7",
+                  stroke: "#166534",
+                  strokeWidth: 0.5,
+                  outline: "none"
+                },
+                hover: {
+                  fill: "#dcfce7", // same as default
+                  stroke: "#166534", // same stroke
+                  strokeWidth: 0.5,
+                  outline: "none"
+                },
+                pressed: {
+                  fill: "#dcfce7",
+                  stroke: "#166534",
+                  strokeWidth: 0.5,
+                  outline: "none"
+                }
+              }} />
+          ))}
+        </Geographies>
+
+        {/* PLACES */}
+        {stateData.places?.map((place, idx) => {
+          const geoCoords = place.coordinates?.coordinates;
+
+          if (!geoCoords || geoCoords.length !== 2) return null;
+          const [lat, lng] = geoCoords;
+          console.log({ place }, { lat, lng });
+
+          return (
+            <Marker
+              key={place._id}
+              coordinates={[
+                lat, lng
+              ]}
+            >
+              <circle
+                r={getMarkerRadius(currentZoom)}
+                fill="#ef4444"
+                data-tooltip-id="place-tooltip"
+                data-tooltip-content={place.name}
+                style={{ cursor: "pointer" }} />
+            </Marker>
+          );
+        })}
+      </ZoomableGroup>
+    </ComposableMap>;
+  }
 };
 
 export default StateDetails;
