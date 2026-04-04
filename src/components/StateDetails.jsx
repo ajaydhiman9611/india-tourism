@@ -14,6 +14,7 @@ import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import PlaceIcon from "@mui/icons-material/Place";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { getWeatherInfo } from "../helpers/weatherData";
+import { constants } from "../helpers/constants";
 
 /* ── centroid helper ── */
 const getCentroid = (geometry) => {
