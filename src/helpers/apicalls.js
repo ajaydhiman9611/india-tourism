@@ -34,11 +34,10 @@ const apiHelper = async ({ url, method = 'GET', data = null, headers = {} }) => 
             console.error('Error Response Status:', error.response.status);
             console.error('Error Response Headers:', error.response.headers);
 
-            throw {
-                message: `HTTP error! Status: ${error.response.status}`,
-                status: error.response.status,
-                data: error.response.data,
-            };
+            const err = new Error(`HTTP error! Status: ${error.response.status}`);
+            err.status = error.response.status;
+            err.data = error.response.data;
+            throw err;
         } else if (error.request) {
             console.error('Error Request:', error.request);
             throw new Error('Network error: No response received from server.');
@@ -49,4 +48,5 @@ const apiHelper = async ({ url, method = 'GET', data = null, headers = {} }) => 
     }
 };
 
-export default { apiHelper }
+const api = { apiHelper };
+export default api;
