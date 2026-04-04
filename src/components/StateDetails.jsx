@@ -37,7 +37,7 @@ const StateDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/api/v1/states/${stateName}`)
+    axios.get(`${constants.API_URL}/states/${stateName}`)
       .then(res => { setStateData(res.data.data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [stateName]);
