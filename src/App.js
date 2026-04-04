@@ -17,6 +17,7 @@ import {
   InputBase, Avatar, Menu, MenuItem, Divider, Tooltip,
   useScrollTrigger, Slide, alpha, CircularProgress,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
+  useMediaQuery, useTheme,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MapIcon from '@mui/icons-material/Map';
@@ -114,6 +115,8 @@ const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [itinerariesOpen, setItinerariesOpen] = useState(false);
@@ -152,8 +155,8 @@ const App = () => {
             height: HEADER_HEIGHT,
           }}
         >
-          <Container maxWidth="xl">
-            <Toolbar disableGutters sx={{ height: HEADER_HEIGHT, gap: 2 }}>
+          <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 3 } }}>
+            <Toolbar disableGutters sx={{ height: HEADER_HEIGHT, gap: { xs: 1, sm: 2 } }}>
 
               {/* Logo */}
               <Box
@@ -165,51 +168,67 @@ const App = () => {
                 }}
               >
                 <MapIcon className="logo-icon"
-                  sx={{ color: '#E05A1B', fontSize: 28, transition: 'transform 0.25s ease' }} />
+                  sx={{ color: '#E05A1B', fontSize: 26, transition: 'transform 0.25s ease' }} />
                 <Box>
-                  <Box sx={{ color: 'white', fontWeight: 700, fontSize: '1.05rem', lineHeight: 1.1 }}>
+                  <Box sx={{ color: 'white', fontWeight: 700, fontSize: { xs: '0.95rem', sm: '1.05rem' }, lineHeight: 1.1 }}>
                     India<Box component="span" sx={{ color: '#E05A1B' }}>Tourism</Box>
                   </Box>
-                  <Box sx={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.62rem', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+                  <Box sx={{ display: { xs: 'none', sm: 'block' }, color: 'rgba(255,255,255,0.45)', fontSize: '0.62rem', letterSpacing: '0.18em', textTransform: 'uppercase' }}>
                     Incredible India
                   </Box>
                 </Box>
               </Box>
 
-              {/* Search */}
-              <Box component="form" onSubmit={handleSearchSubmit}
-                sx={{
-                  flex: 1, maxWidth: 420,
-                  display: 'flex', alignItems: 'center',
-                  background: 'rgba(255,255,255,0.1)',
-                  borderRadius: '999px', px: 2, py: 0.5,
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  transition: 'all 0.2s ease',
-                  '&:focus-within': {
-                    background: 'rgba(255,255,255,0.16)',
-                    border: '1px solid rgba(224,90,27,0.5)',
-                    boxShadow: '0 0 0 3px rgba(224,90,27,0.15)',
-                  },
-                }}
-              >
-                <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 18, mr: 1 }} />
-                <InputBase placeholder="Search destinations…" value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  sx={{ color: 'white', flex: 1, fontSize: '0.88rem',
-                    '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }} />
-              </Box>
+              {/* Search — full pill on sm+, icon-only tap on xs */}
+              {isMobile ? (
+                <IconButton onClick={() => navigate('/search')} size="small"
+                  sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: '#E05A1B' } }}>
+                  <SearchIcon />
+                </IconButton>
+              ) : (
+                <Box component="form" onSubmit={handleSearchSubmit}
+                  sx={{
+                    flex: 1, maxWidth: 420,
+                    display: 'flex', alignItems: 'center',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '999px', px: 2, py: 0.5,
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    transition: 'all 0.2s ease',
+                    '&:focus-within': {
+                      background: 'rgba(255,255,255,0.16)',
+                      border: '1px solid rgba(224,90,27,0.5)',
+                      boxShadow: '0 0 0 3px rgba(224,90,27,0.15)',
+                    },
+                  }}
+                >
+                  <SearchIcon sx={{ color: 'rgba(255,255,255,0.5)', fontSize: 18, mr: 1 }} />
+                  <InputBase placeholder="Search destinations…" value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    sx={{ color: 'white', flex: 1, fontSize: '0.88rem',
+                      '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }} />
+                </Box>
+              )}
 
               <Box sx={{ flex: 1 }} />
 
-              {/* Plan a Trip */}
-              <Button onClick={() => navigate('/itineraryPlanner')}
-                startIcon={<FlightTakeoffIcon sx={{ fontSize: '1rem !important' }} />}
-                variant="contained" color="primary" size="small"
-                sx={{ borderRadius: '999px', px: 2.5, py: 0.8 }}>
-                Plan a Trip
-              </Button>
+              {/* Plan a Trip — text on sm+, icon only on xs */}
+              {isMobile ? (
+                <Tooltip title="Plan a Trip">
+                  <IconButton onClick={() => navigate('/itineraryPlanner')} size="small"
+                    sx={{ color: '#E05A1B' }}>
+                    <FlightTakeoffIcon />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Button onClick={() => navigate('/itineraryPlanner')}
+                  startIcon={<FlightTakeoffIcon sx={{ fontSize: '1rem !important' }} />}
+                  variant="contained" color="primary" size="small"
+                  sx={{ borderRadius: '999px', px: 2.5, py: 0.8, flexShrink: 0 }}>
+                  Plan a Trip
+                </Button>
+              )}
 
-              {user?.isAdmin && (
+              {user?.isAdmin && !isMobile && (
                 <Tooltip title="Admin Dashboard">
                   <IconButton onClick={() => navigate('/admin')} size="small"
                     sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: '#E05A1B' } }}>
@@ -220,18 +239,20 @@ const App = () => {
 
               {user ? (
                 <>
-                  {/* My Itineraries button */}
-                  <Tooltip title="My saved itineraries">
-                    <IconButton onClick={() => setItinerariesOpen(true)} size="small"
-                      sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: '#E05A1B' } }}>
-                      <BookmarksIcon />
-                    </IconButton>
-                  </Tooltip>
+                  {/* My Itineraries — hidden on xs (accessible via avatar menu) */}
+                  {!isMobile && (
+                    <Tooltip title="My saved itineraries">
+                      <IconButton onClick={() => setItinerariesOpen(true)} size="small"
+                        sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: '#E05A1B' } }}>
+                        <BookmarksIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
 
                   <Tooltip title={user.name}>
                     <IconButton onClick={e => setAnchorEl(e.currentTarget)} size="small" sx={{ p: 0.5 }}>
                       <Avatar sx={{
-                        width: 34, height: 34, fontSize: '0.85rem', fontWeight: 700,
+                        width: 32, height: 32, fontSize: '0.82rem', fontWeight: 700,
                         background: 'linear-gradient(135deg, #E05A1B, #F07A45)',
                         border: '2px solid rgba(255,255,255,0.2)',
                       }}>

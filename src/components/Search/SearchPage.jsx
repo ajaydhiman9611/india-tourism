@@ -86,7 +86,7 @@ const SearchPage = () => {
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{ pb: 8 }}>
+      <Container maxWidth="lg" sx={{ pb: 8, px: { xs: 2, sm: 3 } }}>
         {searchError && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setSearchError('')}>
             {searchError}

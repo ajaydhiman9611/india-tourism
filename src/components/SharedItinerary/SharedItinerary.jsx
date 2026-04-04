@@ -72,7 +72,7 @@ const SharedItinerary = () => {
         <Paper elevation={2} sx={{ borderRadius: 4, overflow: 'hidden' }}>
           <Box sx={{
             background: 'linear-gradient(135deg, #1B7A3E, #2DA357)',
-            px: 4, py: 2.5, display: 'flex', alignItems: 'center', gap: 1.5
+            px: { xs: 2.5, md: 4 }, py: 2.5, display: 'flex', alignItems: 'center', gap: 1.5
           }}>
             <AutoAwesomeIcon sx={{ color: 'white' }} />
             <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>

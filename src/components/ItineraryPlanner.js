@@ -181,7 +181,7 @@ export default function ItineraryPlanner() {
           {/* Form header */}
           <Box sx={{
             background: 'linear-gradient(135deg, #E05A1B 0%, #F07A45 100%)',
-            px: 4, py: 3,
+            px: { xs: 2.5, md: 4 }, py: { xs: 2, md: 3 },
             display: 'flex', alignItems: 'center', gap: 2,
           }}>
             <FlightTakeoffIcon sx={{ color: 'white', fontSize: 28 }} />
@@ -193,21 +193,21 @@ export default function ItineraryPlanner() {
             </Box>
           </Box>
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ p: { xs: 3, md: 5 } }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ p: { xs: 2, sm: 3, md: 5 } }}>
             <Grid container spacing={4}>
 
               {/* Section 1 — Where & When */}
-              <Grid item style={{ width: "100%"}}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, width: "80%" }}>
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
                   <Typography sx={{ fontSize: '1.1rem' }}>🗺️</Typography>
                   <Typography variant="h6" fontWeight={600}>Where & When</Typography>
                   <Divider sx={{ flex: 1, ml: 1 }} />
                 </Box>
-                <Grid container spacing={1.5}>
-                  <Grid item style={{width: "30%"}}>
+                <Grid container spacing={2}>
+                  {/* States — full width on xs, 7/12 on md */}
+                  <Grid item xs={12} md={7}>
                     <Autocomplete
                       multiple
-                      style={{ width: '100%' }}
                       options={STATES}
                       value={form.selectedStates}
                       onChange={(_, v) => setForm(f => ({ ...f, selectedStates: v }))}
@@ -231,9 +231,10 @@ export default function ItineraryPlanner() {
                       }
                     />
                   </Grid>
-                  <Grid item style={{width: "15%"}}>
+                  {/* Duration */}
+                  <Grid item xs={6} sm={4} md={2}>
                     <TextField
-                      label="Duration (days) *"
+                      label="Days *"
                       type="number"
                       value={form.daysOfItinerary}
                       onChange={e => {
@@ -242,22 +243,24 @@ export default function ItineraryPlanner() {
                       }}
                       fullWidth
                       inputProps={{ min: 1, max: 90 }}
-                      helperText="1 – 90 days"
+                      helperText="1 – 90"
                     />
                   </Grid>
-                  <Grid item style={{width: "25%"}}>
+                  {/* Month */}
+                  <Grid item xs={6} sm={4} md={3}>
                     <FormControl fullWidth>
-                      <InputLabel>Month of Visit *</InputLabel>
+                      <InputLabel>Month *</InputLabel>
                       <Select
                         value={form.monthOfVisit}
-                        label="Month of Visit *"
+                        label="Month *"
                         onChange={e => setForm(f => ({ ...f, monthOfVisit: e.target.value }))}
                       >
                         {MONTHS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
                       </Select>
                     </FormControl>
                   </Grid>
-                  <Grid item style={{width: "25%"}}>
+                  {/* Trip Type */}
+                  <Grid item xs={12} sm={4} md={4}>
                     <Autocomplete
                       options={TRIP_TYPES}
                       value={form.tripType}
@@ -271,7 +274,7 @@ export default function ItineraryPlanner() {
               </Grid>
 
               {/* Section 2 — Journey Details */}
-              <Grid style={{width: "100%"}} item xs={12}>
+              <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
                   <Typography sx={{ fontSize: '1.1rem' }}>✈️</Typography>
                   <Typography variant="h6" fontWeight={600}>Journey Details</Typography>
@@ -364,8 +367,9 @@ export default function ItineraryPlanner() {
                   : genError
                     ? 'linear-gradient(135deg, #c0392b, #e74c3c)'
                     : 'linear-gradient(135deg, #1B7A3E, #2DA357)',
-                px: 4, py: 3,
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                px: { xs: 2.5, md: 4 }, py: 2.5,
+                display: 'flex', flexWrap: 'wrap',
+                justifyContent: 'space-between', alignItems: 'center', gap: 1.5,
                 transition: 'background 0.6s ease',
               }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -373,7 +377,7 @@ export default function ItineraryPlanner() {
                     ? <ErrorOutlineIcon sx={{ color: 'white' }} />
                     : <AutoAwesomeIcon sx={{ color: 'white' }} />
                   }
-                  <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, fontSize: { xs: '1rem', md: '1.25rem' } }}>
                     {loading
                       ? 'Generating your itinerary…'
                       : genError
@@ -387,29 +391,24 @@ export default function ItineraryPlanner() {
                 {!loading && !genError && itineraryHtml && (
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
-                      variant="outlined"
-                      size="small"
+                      variant="outlined" size="small"
                       startIcon={<SaveIcon />}
-                      onClick={handleSave}
-                      disabled={saveLoading}
+                      onClick={handleSave} disabled={saveLoading}
                       sx={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white',
                         '&:hover': { borderColor: 'white', background: 'rgba(255,255,255,0.1)' } }}
                     >
                       {saveLoading ? 'Saving…' : 'Save'}
                     </Button>
                     {shareToken && (
-                      <Tooltip title="Copy shareable link">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<ShareIcon />}
-                          onClick={handleShare}
-                          sx={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white',
-                            '&:hover': { borderColor: 'white', background: 'rgba(255,255,255,0.1)' } }}
-                        >
-                          Share
-                        </Button>
-                      </Tooltip>
+                      <Button
+                        variant="outlined" size="small"
+                        startIcon={<ShareIcon />}
+                        onClick={handleShare}
+                        sx={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white',
+                          '&:hover': { borderColor: 'white', background: 'rgba(255,255,255,0.1)' } }}
+                      >
+                        Share
+                      </Button>
                     )}
                   </Box>
                 )}

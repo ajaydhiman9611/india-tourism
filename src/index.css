@@ -41,6 +41,9 @@ body {
   line-height: 1.75;
   font-size: 0.96rem;
   color: #1C1C2E;
+  /* Prevent AI-generated wide content from breaking mobile layout */
+  overflow-x: hidden;
+  word-break: break-word;
 }
 .itinerary-html-output h1,
 .itinerary-html-output h2,
@@ -60,26 +63,37 @@ body {
 }
 .itinerary-html-output ul,
 .itinerary-html-output ol {
-  padding-left: 1.5em;
+  padding-left: 1.25em;
 }
 .itinerary-html-output li { margin-bottom: 4px; }
 .itinerary-html-output strong { color: #1B7A3E; }
+/* Wrap wide tables on mobile */
 .itinerary-html-output table {
   width: 100%;
   border-collapse: collapse;
   margin: 1em 0;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .itinerary-html-output th {
   background: #1C1C2E;
   color: white;
   padding: 8px 12px;
   text-align: left;
+  white-space: nowrap;
 }
 .itinerary-html-output td {
   padding: 8px 12px;
   border-bottom: 1px solid #eee;
 }
 .itinerary-html-output tr:nth-child(even) td { background: #f8f8f6; }
+
+@media (max-width: 600px) {
+  .itinerary-html-output { font-size: 0.9rem; }
+  .itinerary-html-output h2 { font-size: 1.2rem; }
+  .itinerary-html-output h3 { font-size: 1rem; }
+}
 
 /* ── place cards on state page ── */
 .place-card {

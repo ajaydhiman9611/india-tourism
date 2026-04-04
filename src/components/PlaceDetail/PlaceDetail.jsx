@@ -215,8 +215,8 @@ const PlaceDetail = () => {
         </Box>
       )}
 
-      <Container maxWidth="xl" sx={{ mt: 5 }}>
-        <Grid container spacing={5}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 5 }, px: { xs: 1.5, sm: 3 } }}>
+        <Grid container spacing={{ xs: 3, md: 5 }}>
 
           {/* ── Left column ── */}
           <Grid item xs={12} md={8}>
@@ -346,7 +346,7 @@ const PlaceDetail = () => {
 
           {/* ── Right sidebar ── */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ position: 'sticky', top: 88 }}>
+            <Box sx={{ position: { md: 'sticky' }, top: 88 }}>
               <Paper elevation={2} sx={{ p: 3, borderRadius: 3, mb: 3 }}>
                 <Typography variant="h6" fontWeight={700} gutterBottom>Quick Info</Typography>
                 <Divider sx={{ mb: 2 }} />

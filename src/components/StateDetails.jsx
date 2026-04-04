@@ -150,7 +150,7 @@ const StateDetails = () => {
           <Container maxWidth="lg" sx={{ py: 3 }}>
             <Grid container spacing={3} alignItems="stretch" justifyContent="center">
               <Grid item xs={12} md={selectedPlace ? 8 : 10}>
-                <Paper elevation={2} sx={{ overflow: 'hidden', height: 462, borderRadius: 3, mx: 'auto' }}>
+                <Paper elevation={2} sx={{ overflow: 'hidden', height: { xs: 300, sm: 380, md: 462 }, borderRadius: 3, mx: 'auto' }}>
                   <ComposableMap
                     projection="geoMercator"
                     projectionConfig={{ scale: 1320 }}
@@ -237,8 +237,8 @@ const StateDetails = () => {
       )}
 
       {/* ── Places grid ── */}
-      <Container maxWidth="xl" sx={{ py: 6 }}>
-        <Box mb={4}>
+      <Container maxWidth="md" sx={{ py: 6 }}>
+        <Box mb={4} textAlign={{ xs: 'center', sm: 'left' }}>
           <Typography className="section-label">Tourist Attractions</Typography>
           <Typography variant="h3" sx={{ fontSize: { xs: '1.8rem', md: '2.2rem' } }}>
             Places to Visit in {stateData.name}
@@ -246,12 +246,12 @@ const StateDetails = () => {
         </Box>
 
         {(!stateData.places || stateData.places.length === 0) && (
-          <Typography color="text.secondary">No places added yet.</Typography>
+          <Typography color="text.secondary" textAlign="center">No places added yet.</Typography>
         )}
 
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           {stateData.places?.map((place) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={place._id}>
+            <Grid item xs={12} sm={6} key={place._id}>
               <Card
                 sx={{
                   height: '100%', display: 'flex', flexDirection: 'column',
