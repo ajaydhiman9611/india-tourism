@@ -147,13 +147,13 @@ const StateDetails = () => {
       {/* ── Map + tooltip panel ── */}
       {stateGeoJson && (
         <Box sx={{ background: '#F8F8F6', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-          <Container maxWidth="xl" sx={{ py: 3 }}>
-            <Grid container spacing={3} alignItems="stretch">
-              <Grid item xs={12} md={selectedPlace ? 8 : 12}>
-                <Paper elevation={2} sx={{ overflow: 'hidden', height: 420, borderRadius: 3 }}>
+          <Container maxWidth="lg" sx={{ py: 3 }}>
+            <Grid container spacing={3} alignItems="stretch" justifyContent="center">
+              <Grid item xs={12} md={selectedPlace ? 8 : 10}>
+                <Paper elevation={2} sx={{ overflow: 'hidden', height: 462, borderRadius: 3, mx: 'auto' }}>
                   <ComposableMap
                     projection="geoMercator"
-                    projectionConfig={{ scale: 1200 }}
+                    projectionConfig={{ scale: 1320 }}
                     style={{ width: "100%", height: "100%" }}
                   >
                     <ZoomableGroup
@@ -200,7 +200,7 @@ const StateDetails = () => {
 
               {selectedPlace && (
                 <Grid item xs={12} md={4}>
-                  <Paper elevation={2} sx={{ height: 420, display: 'flex', flexDirection: 'column', borderRadius: 3, overflow: 'hidden' }}>
+                  <Paper elevation={2} sx={{ height: 462, display: 'flex', flexDirection: 'column', borderRadius: 3, overflow: 'hidden' }}>
                     {selectedPlace.thumbImage && (
                       <Box
                         component="img"
