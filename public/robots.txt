@@ -1,3 +1,12 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Keep auth, admin, and API pages private
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /profile
+Disallow: /auth/
+Disallow: /admin
+
+Sitemap: https://www.indiatourism.com/sitemap.xml

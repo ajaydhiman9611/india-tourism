@@ -5,6 +5,8 @@ import StateDetails from './components/StateDetails';
 import ItineraryPlanner from './components/ItineraryPlanner';
 import LoginPage from './components/Auth/LoginPage';
 import RegisterPage from './components/Auth/RegisterPage';
+import ForgotPasswordPage from './components/Auth/ForgotPasswordPage';
+import ProfilePage from './components/Profile/ProfilePage';
 import SearchPage from './components/Search/SearchPage';
 import PlaceDetail from './components/PlaceDetail/PlaceDetail';
 import SharedItinerary from './components/SharedItinerary/SharedItinerary';
@@ -13,13 +15,15 @@ import MyItinerariesDialog from './components/MyItineraries/MyItinerariesDialog'
 import {
   AppBar, Toolbar, Box, Container, Button, IconButton,
   InputBase, Avatar, Menu, MenuItem, Divider, Tooltip,
-  useScrollTrigger, Slide, alpha, CircularProgress
+  useScrollTrigger, Slide, alpha, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MapIcon from '@mui/icons-material/Map';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import BookmarksIcon from '@mui/icons-material/Bookmarks';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useAuth } from './context/AuthContext';
 
 // Hide header on scroll down
@@ -31,7 +35,7 @@ function HideOnScroll({ children }) {
 const HEADER_HEIGHT = 68;
 
 // ── Google OAuth callback page ─────────────────────────────────────────────────
-// Reads ?token= from URL, persists it, then redirects home.
+// Reads ?token= and ?refreshToken= from URL, persists them, then redirects home.
 const AuthCallbackPage = () => {
   const { loginWithToken } = useAuth();
   const navigate = useNavigate();
@@ -39,15 +43,16 @@ const AuthCallbackPage = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    const error = params.get('error');
+    const token        = params.get('token');
+    const refreshToken = params.get('refreshToken');
+    const error        = params.get('error');
 
     if (error) {
       navigate(`/login?error=${encodeURIComponent(error)}`, { replace: true });
       return;
     }
     if (token) {
-      loginWithToken(token);
+      loginWithToken(token, refreshToken);
     }
     navigate('/', { replace: true });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -59,6 +64,52 @@ const AuthCallbackPage = () => {
   );
 };
 
+// ── Mobile number prompt (shown once after Google sign-in) ────────────────────
+const MobilePromptDialog = ({ open, onClose }) => {
+  const { updateMobile } = useAuth();
+  const [mobile, setMobile]   = useState('');
+  const [busy,   setBusy]     = useState(false);
+
+  const handleSave = async () => {
+    if (!mobile.trim()) { onClose(); return; }
+    setBusy(true);
+    try {
+      await updateMobile(mobile.trim());
+    } catch { /* non-critical */ } finally {
+      setBusy(false);
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+      <DialogTitle sx={{ fontWeight: 700 }}>One last thing 👋</DialogTitle>
+      <DialogContent>
+        <Box sx={{ color: 'text.secondary', mb: 2, fontSize: '0.9rem' }}>
+          Add your mobile number so we can assist with travel bookings. You can always do this later in your profile.
+        </Box>
+        <TextField
+          label="Mobile number" type="tel" fullWidth autoFocus
+          value={mobile} onChange={e => setMobile(e.target.value)}
+          inputProps={{ maxLength: 15 }}
+          placeholder="+91 98765 43210"
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+        <Button onClick={onClose} sx={{ textTransform: 'none', color: 'text.secondary' }}>
+          Skip for now
+        </Button>
+        <Button
+          variant="contained" color="primary" onClick={handleSave}
+          disabled={busy} sx={{ textTransform: 'none', borderRadius: 2 }}
+        >
+          {busy ? <CircularProgress size={18} color="inherit" /> : 'Save'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,6 +117,17 @@ const App = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [itinerariesOpen, setItinerariesOpen] = useState(false);
+
+  // Show mobile prompt once after Google sign-in when mobile is missing
+  const [mobilePromptOpen, setMobilePromptOpen] = useState(false);
+  const [mobilePromptShown, setMobilePromptShown] = useState(false);
+  useEffect(() => {
+    if (user && user.authProvider === 'google' && !user.mobile && !mobilePromptShown) {
+      setMobilePromptShown(true);
+      // Small delay so the page settles first
+      setTimeout(() => setMobilePromptOpen(true), 800);
+    }
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -188,6 +250,11 @@ const App = () => {
                       <Box sx={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.2 }}>{user.email}</Box>
                     </Box>
                     <Divider />
+                    <MenuItem onClick={() => { navigate('/profile'); setAnchorEl(null); }}
+                      sx={{ gap: 1.5, fontSize: '0.9rem' }}>
+                      <AccountCircleIcon fontSize="small" sx={{ color: '#E05A1B' }} />
+                      My Profile
+                    </MenuItem>
                     <MenuItem onClick={() => { setItinerariesOpen(true); setAnchorEl(null); }}
                       sx={{ gap: 1.5, fontSize: '0.9rem' }}>
                       <BookmarksIcon fontSize="small" sx={{ color: '#E05A1B' }} />
@@ -240,10 +307,15 @@ const App = () => {
         <Route path="/itinerary/:shareToken" element={<SharedItinerary />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
 
       {/* My Itineraries dialog */}
       <MyItinerariesDialog open={itinerariesOpen} onClose={() => setItinerariesOpen(false)} />
+
+      {/* Mobile number prompt for Google sign-in users */}
+      <MobilePromptDialog open={mobilePromptOpen} onClose={() => setMobilePromptOpen(false)} />
 
       {/* Footer */}
       <Box component="footer"
