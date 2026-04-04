@@ -83,10 +83,10 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <Grid container sx={{ minHeight: '100vh' }}>
+    <Grid container sx={{ height: 'calc(100vh - 68px)', overflow: 'hidden' }}>
       <LeftPanel />
       <Grid item xs={12} md={6}
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4, bgcolor: 'background.default' }}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4, bgcolor: 'background.default', overflowY: 'auto' }}
       >
         <Box sx={{ width: '100%', maxWidth: 420 }}>
           {/* Mobile logo */}

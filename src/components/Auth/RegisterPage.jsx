@@ -111,13 +111,13 @@ const RegisterPage = () => {
   }
 
   return (
-    <Grid container sx={{ minHeight: '100vh' }}>
+    <Grid container sx={{ height: 'calc(100vh - 68px)', overflow: 'hidden' }}>
       <LeftPanel />
 
       {/* Right — form panel */}
       <Grid item xs={12} md={7}
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-          p: { xs: 3, sm: 5 }, bgcolor: 'background.default' }}
+          p: { xs: 3, sm: 5 }, bgcolor: 'background.default', overflowY: 'auto' }}
       >
         <Box sx={{ width: '100%', maxWidth: 440 }}>
 

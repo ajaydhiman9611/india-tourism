@@ -47,7 +47,10 @@ const LeftPanel = () => (
       flexDirection: 'column',
       justifyContent: 'space-between',
       background: 'linear-gradient(160deg, #1C1C2E 0%, #2D1B4E 60%, #1C1C2E 100%)',
-      p: 6, position: 'relative', overflow: 'hidden',
+      p: 6, 
+      position: 'relative', 
+      overflow: 'hidden',
+      // minHeight: '90vh',
     }}
   >
     {/* Blobs */}
@@ -240,13 +243,13 @@ const LoginPage = () => {
   const onSuccess  = () => navigate('/')
 
   return (
-    <Grid container sx={{ minHeight: '100vh' }}>
+    <Grid container sx={{ height: 'calc(100vh - 68px)', overflow: 'hidden' }}>
       <LeftPanel />
 
       {/* Right — form panel */}
       <Grid item xs={12} md={7}
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
-          p: { xs: 3, sm: 5 }, bgcolor: 'background.default' }}
+          p: { xs: 3, sm: 5 }, bgcolor: 'background.default', overflowY: 'auto' }}
       >
         <Box sx={{ width: '100%', maxWidth: 440 }}>
 

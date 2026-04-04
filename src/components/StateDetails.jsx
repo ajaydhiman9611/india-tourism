@@ -81,7 +81,7 @@ const StateDetails = () => {
   );
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
+    <Box sx={{ bgcolor: 'background.default', minHeight: 'calc(100vh - 68px)' }}>
 
       {/* ── Hero ── */}
       <Box

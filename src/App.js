@@ -139,6 +139,7 @@ const App = () => {
   };
 
   const isHome = location.pathname === '/';
+  const isAuthPage = ['/login', '/register', '/forgot-password'].includes(location.pathname);
 
   return (
     <>
@@ -338,12 +339,14 @@ const App = () => {
       {/* Mobile number prompt for Google sign-in users */}
       <MobilePromptDialog open={mobilePromptOpen} onClose={() => setMobilePromptOpen(false)} />
 
-      {/* Footer */}
-      <Box component="footer"
-        sx={{ background: '#1C1C2E', color: 'rgba(255,255,255,0.5)', textAlign: 'center',
-          py: 1, fontSize: '0.82rem', mt: 'auto' }}>
-        © {new Date().getFullYear()} IndiaExplore · Made with ♥ for incredible India
-      </Box>
+      {/* Footer — hidden on auth pages (they are exact-height, no room for footer) */}
+      {!isAuthPage && (
+        <Box component="footer"
+          sx={{ background: '#1C1C2E', color: 'rgba(255,255,255,0.5)', textAlign: 'center',
+            py: 1, fontSize: '0.82rem', mt: 'auto' }}>
+          © {new Date().getFullYear()} IndiaExplore · Made with ♥ for incredible India
+        </Box>
+      )}
     </>
   );
 };
