@@ -12,12 +12,20 @@ import {
   Select,
   MenuItem,
   Box,
-  Autocomplete, // <-- Import Autocomplete
-  CircularProgress
+  Autocomplete,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Tooltip
 } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
+import ShareIcon from '@mui/icons-material/Share';
 import DOMPurify from 'dompurify';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import apicalls from '../helpers/apicalls';
+import axios from 'axios';
+import { constants } from '../helpers/constants';
+import { useAuth } from '../context/AuthContext';
 // Sample data (indianStates and months remain the same)
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -72,6 +80,10 @@ const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
 
 
 function ItineraryPlanner() {
+  const { user, authHeader } = useAuth();
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [shareToken, setShareToken] = useState(null);
   const [formData, setFormData] = useState({
     selectedStates: [], // This will now be an array of strings from Autocomplete
     daysOfItinerary: 3,
@@ -145,6 +157,34 @@ function ItineraryPlanner() {
       //   setSubmittedData(null);
       // }, 2000);
     }
+  };
+
+  const handleSave = async () => {
+    if (!itineraryDetails) return;
+    setSaveLoading(true);
+    try {
+      const title = `${formData.selectedStates.join(', ')} – ${formData.daysOfItinerary} days (${formData.monthOfVisit})`;
+      const res = await axios.post(
+        `${constants.API_URL}/itineraries/save`,
+        { title, htmlContent: itineraryDetails, promptDetails: formData },
+        { headers: authHeader() }
+      );
+      const token = res.data.data.shareToken;
+      setShareToken(token);
+      setSnackbar({ open: true, message: 'Itinerary saved!', severity: 'success' });
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Failed to save itinerary', severity: 'error' });
+    } finally {
+      setSaveLoading(false);
+    }
+  };
+
+  const handleShare = () => {
+    if (!shareToken) return;
+    const url = `${window.location.origin}/itinerary/${shareToken}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setSnackbar({ open: true, message: 'Share link copied to clipboard!', severity: 'success' });
+    });
   };
 
   const createMarkup = (htmlString) => {
@@ -351,19 +391,56 @@ function ItineraryPlanner() {
             </Box>
             <br/><br/>
             {itineraryDetails && !loading && (
-              <div 
-                className="itinerary-content-display" 
-                style={{ 
+              <div
+                ref={itineraryDisplayRef}
+                className="itinerary-content-display"
+                style={{
                   marginTop: '20px',
                   padding: '15px',
                   border: '1px solid #ccc',
                   borderRadius: '5px',
                   background: '#f9f9f9'
                   }}>
-                <h3>Generated Itinerary:</h3>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <h3 style={{ margin: 0 }}>Generated Itinerary:</h3>
+                  <Box display="flex" gap={1}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<SaveIcon />}
+                      onClick={handleSave}
+                      disabled={saveLoading}
+                      size="small"
+                    >
+                      {saveLoading ? 'Saving…' : 'Save'}
+                    </Button>
+                    {shareToken && (
+                      <Tooltip title="Copy share link">
+                        <Button
+                          variant="outlined"
+                          startIcon={<ShareIcon />}
+                          onClick={handleShare}
+                          size="small"
+                          color="secondary"
+                        >
+                          Share
+                        </Button>
+                      </Tooltip>
+                    )}
+                  </Box>
+                </Box>
                 <div dangerouslySetInnerHTML={createMarkup(itineraryDetails)} />
               </div>
             )}
+            <Snackbar
+              open={snackbar.open}
+              autoHideDuration={3000}
+              onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+              <Alert severity={snackbar.severity} onClose={() => setSnackbar(s => ({ ...s, open: false }))}>
+                {snackbar.message}
+              </Alert>
+            </Snackbar>
           </CardContent>
         </StyledCard>
       </Container>

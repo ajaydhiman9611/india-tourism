@@ -3,12 +3,14 @@ import {constants} from "./constants"
 
 const apiHelper = async ({ url, method = 'GET', data = null, headers = {} }) => {
     console.log({API_URL: constants.API_URL})
+    const token = localStorage.getItem('it_token')
     try {
         const config = {
             url: constants.API_URL + url, // Full URL
             method: method.toUpperCase(), // Ensure method is uppercase
             headers: {
                 'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 ...headers,
             },
         };

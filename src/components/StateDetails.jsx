@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ComposableMap,
   Geographies,
@@ -12,6 +12,9 @@ import { Card, CardBody, Button, Badge } from "reactstrap";
 import "./TouristPlaceComponent/StateDetails.scss";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
+import { Chip, Paper, Typography } from "@mui/material";
+import WbSunnyIcon from "@mui/icons-material/WbSunny";
+import { getWeatherInfo } from "../helpers/weatherData";
 
 /* ---------- HELPERS ---------- */
 const getCentroid = (geometry) => {
@@ -37,6 +40,7 @@ const getCentroid = (geometry) => {
 /* ---------- COMPONENT ---------- */
 const StateDetails = () => {
   const { stateName } = useParams();
+  const navigate = useNavigate();
 
   const [stateData, setStateData] = useState(null);
   const [stateGeoJson, setStateGeoJson] = useState(null);
@@ -107,6 +111,21 @@ const StateDetails = () => {
         </div>
       </div>
 
+      {/* ---------- WEATHER WIDGET ---------- */}
+      {(() => {
+        const weather = getWeatherInfo(stateName);
+        if (!weather) return null;
+        return (
+          <Paper elevation={2} sx={{ p: 2, mx: 2, my: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', background: '#fffbeb' }}>
+            <WbSunnyIcon sx={{ color: '#f59e0b' }} />
+            <Typography variant="body1" fontWeight={600}>Best Time to Visit:</Typography>
+            <Chip label={weather.months} color="warning" />
+            <Chip label={weather.climate} variant="outlined" />
+            <Typography variant="body2" color="text.secondary" sx={{ flexBasis: '100%' }}>{weather.tip}</Typography>
+          </Paper>
+        );
+      })()}
+
       {/* ---------- MAP ---------- */}
       <div className="map-section">
         {renderStateMap()}
@@ -145,8 +164,16 @@ const StateDetails = () => {
                   <Button
                     size="sm"
                     onClick={() => handlePlaceClick(place)}
+                    className="me-2"
                   >
                     View on Map
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="success"
+                    onClick={() => navigate(`/place/${place._id}`)}
+                  >
+                    View Details
                   </Button>
                 </CardBody>
               </Card>
