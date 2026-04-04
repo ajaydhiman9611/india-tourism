@@ -1,26 +1,26 @@
 import React, { useState } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import {
-  Box, Grid, TextField, Button, Typography, Alert, Divider, CircularProgress, alpha
+  Box, Grid, TextField, Button, Typography, Alert, Divider,
+  CircularProgress, alpha, InputAdornment, IconButton,
 } from '@mui/material'
-import MapIcon from '@mui/icons-material/Map'
+import MapIcon        from '@mui/icons-material/Map'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { useAuth } from '../../context/AuthContext'
 
 const QUOTES = [
   { text: "India is not a country, it's a journey.", attr: "Rumi (paraphrased)" },
-  { text: "To travel is to live.", attr: "Hans Christian Andersen" },
   { text: "Once a year, go someplace you've never been before.", attr: "Dalai Lama" },
+  { text: "To travel is to live.", attr: "Hans Christian Andersen" },
 ]
 const Q = QUOTES[Math.floor(Math.random() * QUOTES.length)]
 
-// ── Google colour button ───────────────────────────────────────────────────────
-const GoogleButton = ({ onClick, disabled }) => (
+// ── Google button ──────────────────────────────────────────────────────────────
+const GoogleButton = ({ onClick, disabled, label = 'Continue with Google' }) => (
   <Button
-    fullWidth
-    variant="outlined"
-    size="large"
-    disabled={disabled}
-    onClick={onClick}
+    fullWidth variant="outlined" size="large"
+    disabled={disabled} onClick={onClick}
     startIcon={
       <svg width="18" height="18" viewBox="0 0 18 18">
         <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
@@ -30,52 +30,94 @@ const GoogleButton = ({ onClick, disabled }) => (
       </svg>
     }
     sx={{
-      borderColor: 'divider',
-      color: 'text.primary',
-      py: 1.4,
-      borderRadius: 2,
-      textTransform: 'none',
-      fontSize: '0.95rem',
+      py: 1.4, borderRadius: 2, textTransform: 'none', fontSize: '0.95rem',
+      borderColor: 'divider', color: 'text.primary', fontWeight: 600,
       '&:hover': { borderColor: '#4285F4', background: alpha('#4285F4', 0.04) },
     }}
   >
-    Continue with Google
+    {label}
   </Button>
 )
 
 // ── Left decorative panel ──────────────────────────────────────────────────────
 const LeftPanel = () => (
-  <Grid item xs={false} md={6}
+  <Grid item xs={false} md={5}
     sx={{
       display: { xs: 'none', md: 'flex' },
       flexDirection: 'column',
-      justifyContent: 'flex-end',
-      background: 'linear-gradient(160deg, #1C1C2E 0%, #2D1B4E 50%, #1C1C2E 100%)',
+      justifyContent: 'space-between',
+      background: 'linear-gradient(160deg, #1C1C2E 0%, #2D1B4E 60%, #1C1C2E 100%)',
       p: 6, position: 'relative', overflow: 'hidden',
     }}
   >
-    <Box sx={{ position: 'absolute', top: -100, right: -100, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,90,27,0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
-    <Box sx={{ position: 'absolute', bottom: 0, left: -80, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(27,122,62,0.2) 0%, transparent 70%)', pointerEvents: 'none' }} />
-    <Box sx={{ position: 'absolute', top: 40, left: 48, display: 'flex', alignItems: 'center', gap: 1 }}>
+    {/* Blobs */}
+    <Box sx={{ position: 'absolute', top: -120, right: -120, width: 480, height: 480, borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,90,27,0.22) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    <Box sx={{ position: 'absolute', bottom: 60, left: -100, width: 340, height: 340, borderRadius: '50%', background: 'radial-gradient(circle, rgba(27,122,62,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+    {/* Logo */}
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, position: 'relative', zIndex: 1 }}>
       <MapIcon sx={{ color: '#E05A1B', fontSize: 28 }} />
       <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>
         India<Box component="span" sx={{ color: '#E05A1B' }}>Tourism</Box>
       </Typography>
     </Box>
+
+    {/* Stats strip */}
     <Box sx={{ position: 'relative', zIndex: 1 }}>
-      <Typography sx={{ fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#E05A1B', mb: 1 }}>Travel Wisdom</Typography>
-      <Typography variant="h3" sx={{ color: 'white', fontFamily: '"Playfair Display", serif', fontSize: '2rem', lineHeight: 1.4, mb: 2 }}>"{Q.text}"</Typography>
-      <Typography sx={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>— {Q.attr}</Typography>
+      {[
+        { value: '36', label: 'States & UTs' },
+        { value: '40+', label: 'UNESCO Sites' },
+        { value: '5000+', label: 'Years of History' },
+      ].map(stat => (
+        <Box key={stat.label} sx={{ mb: 3 }}>
+          <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: '#E05A1B', lineHeight: 1 }}>{stat.value}</Typography>
+          <Typography sx={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', mt: 0.3 }}>{stat.label}</Typography>
+        </Box>
+      ))}
+    </Box>
+
+    {/* Quote */}
+    <Box sx={{ position: 'relative', zIndex: 1 }}>
+      <Typography sx={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#E05A1B', mb: 1 }}>Travel Wisdom</Typography>
+      <Typography sx={{ color: 'white', fontFamily: '"Playfair Display", serif', fontSize: '1.35rem', lineHeight: 1.5, mb: 1.5, fontStyle: 'italic' }}>
+        "{Q.text}"
+      </Typography>
+      <Typography sx={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.8rem' }}>— {Q.attr}</Typography>
     </Box>
   </Grid>
 )
 
-// ── Password login tab ─────────────────────────────────────────────────────────
+// ── Tab switcher ───────────────────────────────────────────────────────────────
+const TabSwitcher = ({ tab, onChange }) => (
+  <Box sx={{
+    display: 'flex', gap: 0.5, mb: 3,
+    p: 0.5, background: 'rgba(0,0,0,0.05)', borderRadius: 2,
+  }}>
+    {[{ id: 'otp', label: 'Email OTP' }, { id: 'password', label: 'Password' }].map(t => (
+      <Button key={t.id} fullWidth size="small"
+        variant={tab === t.id ? 'contained' : 'text'}
+        color={tab === t.id ? 'primary' : 'inherit'}
+        onClick={() => onChange(t.id)}
+        sx={{
+          borderRadius: 1.5, textTransform: 'none', py: 0.9, fontWeight: 600,
+          fontSize: '0.88rem',
+          color: tab === t.id ? undefined : 'text.secondary',
+          boxShadow: tab === t.id ? 2 : 'none',
+        }}
+      >
+        {t.label}
+      </Button>
+    ))}
+  </Box>
+)
+
+// ── Password form ──────────────────────────────────────────────────────────────
 const PasswordForm = ({ onSuccess }) => {
   const { login } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [form,   setForm]   = useState({ email: '', password: '' })
+  const [showPw, setShowPw] = useState(false)
+  const [error,  setError]  = useState('')
+  const [busy,   setBusy]   = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -84,19 +126,30 @@ const PasswordForm = ({ onSuccess }) => {
       await login(form.email, form.password)
       onSuccess()
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password')
+      setError(err.response?.data?.message || 'Invalid email or password.')
     } finally { setBusy(false) }
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <TextField label="Email address" type="email" fullWidth required value={form.email}
-        onChange={e => setForm(f => ({ ...f, email: e.target.value }))} sx={{ mb: 2 }} />
-      <TextField label="Password" type="password" fullWidth required value={form.password}
-        onChange={e => setForm(f => ({ ...f, password: e.target.value }))} sx={{ mb: 1 }} />
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2.5 }}>
-        <Link to="/forgot-password" style={{ color: '#E05A1B', fontSize: '0.85rem', textDecoration: 'none' }}>
+      {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>{error}</Alert>}
+      <TextField label="Email address" type="email" fullWidth required
+        value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+        sx={{ mb: 2 }} />
+      <TextField label="Password" type={showPw ? 'text' : 'password'} fullWidth required
+        value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => setShowPw(v => !v)} edge="end" tabIndex={-1}>
+                {showPw ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+        sx={{ mb: 1 }} />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        <Link to="/forgot-password" style={{ color: '#E05A1B', fontSize: '0.84rem', fontWeight: 600, textDecoration: 'none' }}>
           Forgot password?
         </Link>
       </Box>
@@ -108,15 +161,15 @@ const PasswordForm = ({ onSuccess }) => {
   )
 }
 
-// ── OTP login tab ──────────────────────────────────────────────────────────────
+// ── OTP form ───────────────────────────────────────────────────────────────────
 const OtpForm = ({ onSuccess }) => {
   const { requestOtp, verifyOtp } = useAuth()
   const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState('')
-  const [step, setStep] = useState('email') // 'email' | 'otp'
-  const [info, setInfo] = useState('')
+  const [otp,   setOtp]   = useState('')
+  const [step,  setStep]  = useState('email')
+  const [info,  setInfo]  = useState('')
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy,  setBusy]  = useState(false)
 
   const handleRequestOtp = async (e) => {
     e.preventDefault()
@@ -126,7 +179,7 @@ const OtpForm = ({ onSuccess }) => {
       setInfo(`A 6-digit code was sent to ${email}`)
       setStep('otp')
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not send OTP')
+      setError(err.response?.data?.message || 'Could not send OTP. Please try again.')
     } finally { setBusy(false) }
   }
 
@@ -137,41 +190,40 @@ const OtpForm = ({ onSuccess }) => {
       await verifyOtp(email, otp)
       onSuccess()
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid or expired OTP')
+      setError(err.response?.data?.message || 'Invalid or expired code.')
     } finally { setBusy(false) }
   }
 
-  if (step === 'email') {
-    return (
-      <form onSubmit={handleRequestOtp}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <TextField label="Email address" type="email" fullWidth required value={email}
-          onChange={e => setEmail(e.target.value)} sx={{ mb: 3 }} />
-        <Button type="submit" variant="contained" color="primary" fullWidth size="large"
-          disabled={busy} sx={{ py: 1.5, borderRadius: 2 }}>
-          {busy ? <CircularProgress size={22} color="inherit" /> : 'Send OTP'}
-        </Button>
-      </form>
-    )
-  }
+  if (step === 'email') return (
+    <form onSubmit={handleRequestOtp}>
+      {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>{error}</Alert>}
+      <TextField label="Email address" type="email" fullWidth required
+        value={email} onChange={e => setEmail(e.target.value)} sx={{ mb: 3 }} />
+      <Button type="submit" variant="contained" color="primary" fullWidth size="large"
+        disabled={busy} sx={{ py: 1.5, borderRadius: 2 }}>
+        {busy ? <CircularProgress size={22} color="inherit" /> : 'Send One-Time Code'}
+      </Button>
+    </form>
+  )
 
   return (
     <form onSubmit={handleVerifyOtp}>
-      {info && <Alert severity="info" sx={{ mb: 2 }}>{info}</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {info  && <Alert severity="info"  sx={{ mb: 2, borderRadius: 2 }}>{info}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
       <TextField
-        label="6-digit code" fullWidth required value={otp}
-        onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+        label="6-digit code" fullWidth required
+        value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
         inputProps={{ inputMode: 'numeric', maxLength: 6 }}
-        sx={{ mb: 1 }}
+        autoFocus sx={{ mb: 3 }}
       />
-      <Button variant="text" size="small" sx={{ mb: 2, color: 'text.secondary', textTransform: 'none' }}
-        onClick={() => { setStep('email'); setError(''); setInfo(''); setOtp('') }}>
-        ← Change email
-      </Button>
       <Button type="submit" variant="contained" color="primary" fullWidth size="large"
         disabled={busy || otp.length < 6} sx={{ py: 1.5, borderRadius: 2 }}>
         {busy ? <CircularProgress size={22} color="inherit" /> : 'Verify & Sign In'}
+      </Button>
+      <Button variant="text" fullWidth size="small"
+        onClick={() => { setStep('email'); setError(''); setInfo(''); setOtp('') }}
+        sx={{ mt: 1.5, textTransform: 'none', color: 'text.secondary', fontSize: '0.84rem' }}>
+        ← Use a different email
       </Button>
     </form>
   )
@@ -182,62 +234,58 @@ const LoginPage = () => {
   const { loginWithGoogle } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [tab, setTab] = useState('otp') // 'otp' | 'password'
+  const [tab, setTab] = useState('otp')
 
   const oauthError = searchParams.get('error')
-
-  const onSuccess = () => navigate('/')
+  const onSuccess  = () => navigate('/')
 
   return (
     <Grid container sx={{ minHeight: '100vh' }}>
       <LeftPanel />
-      <Grid item xs={12} md={6}
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4, bgcolor: 'background.default' }}
+
+      {/* Right — form panel */}
+      <Grid item xs={12} md={7}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
+          p: { xs: 3, sm: 5 }, bgcolor: 'background.default' }}
       >
-        <Box sx={{ width: '100%', maxWidth: 420 }}>
+        <Box sx={{ width: '100%', maxWidth: 440 }}>
+
           {/* Mobile logo */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, mb: 4 }}>
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1, mb: 5 }}>
             <MapIcon sx={{ color: '#E05A1B' }} />
             <Typography fontWeight={700} fontSize="1.1rem">
               India<Box component="span" sx={{ color: '#E05A1B' }}>Tourism</Box>
             </Typography>
           </Box>
 
-          <Typography variant="h4" fontWeight={700} gutterBottom>Welcome back</Typography>
-          <Typography color="text.secondary" mb={oauthError ? 2 : 4}>Sign in to continue your journey across India.</Typography>
+          <Typography variant="h4" fontWeight={700} sx={{ mb: 0.5 }}>Welcome back</Typography>
+          <Typography color="text.secondary" sx={{ mb: oauthError ? 2 : 3.5, fontSize: '0.95rem' }}>
+            Sign in to continue your journey across India.
+          </Typography>
 
-          {/* OAuth error (e.g. Google SSO failed) */}
           {oauthError && (
-            <Alert severity="error" sx={{ mb: 3 }}>{decodeURIComponent(oauthError)}</Alert>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {decodeURIComponent(oauthError)}
+            </Alert>
           )}
 
           {/* Google SSO */}
           <GoogleButton onClick={loginWithGoogle} />
 
           <Divider sx={{ my: 3 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>or sign in with email</Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ px: 1.5, fontSize: '0.8rem' }}>
+              or continue with email
+            </Typography>
           </Divider>
 
           {/* Tab switcher */}
-          <Box sx={{ display: 'flex', gap: 1, mb: 3, background: 'action.hover', borderRadius: 2, p: 0.5 }}>
-            {['otp', 'password'].map(t => (
-              <Button key={t} fullWidth size="small"
-                variant={tab === t ? 'contained' : 'text'}
-                color={tab === t ? 'primary' : 'inherit'}
-                onClick={() => setTab(t)}
-                sx={{ borderRadius: 1.5, textTransform: 'none', py: 0.8,
-                  color: tab === t ? undefined : 'text.secondary' }}
-              >
-                {t === 'otp' ? 'Email OTP' : 'Password'}
-              </Button>
-            ))}
-          </Box>
+          <TabSwitcher tab={tab} onChange={setTab} />
 
           {tab === 'otp' ? <OtpForm onSuccess={onSuccess} /> : <PasswordForm onSuccess={onSuccess} />}
 
-          <Typography textAlign="center" fontSize="0.9rem" mt={3}>
+          <Typography textAlign="center" fontSize="0.88rem" color="text.secondary" mt={3.5}>
             No account?{' '}
-            <Link to="/register" style={{ color: '#E05A1B', fontWeight: 600, textDecoration: 'none' }}>
+            <Link to="/register" style={{ color: '#E05A1B', fontWeight: 700, textDecoration: 'none' }}>
               Create one free
             </Link>
           </Typography>

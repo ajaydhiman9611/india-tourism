@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
-import { Box, Container, Typography, Button, Grid } from '@mui/material';
+import { Box, Container, Typography, Button } from '@mui/material';
 import ExploreIcon from '@mui/icons-material/Explore';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 
@@ -129,12 +129,25 @@ export default function IndiaMapInteractive() {
             </Box>
           </Box>
 
-          {/* Stats strip — sits at the bottom of the hero, bleeds into map section */}
-          <Grid container sx={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          {/* Stats strip */}
+          <Box sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            borderTop: '1px solid rgba(255,255,255,0.07)',
+          }}>
             {STATS.map((s, i) => (
-              <Grid item xs={6} sm={3} key={i} sx={{
-                py: 2.5, textAlign: 'center',
-                borderRight: i < STATS.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+              <Box key={i} sx={{
+                width: { xs: '50%', sm: '25%' },
+                py: 2.5,
+                textAlign: 'center',
+                // Only draw right-border between items within the same row.
+                // xs: 2 cols → border after col 0 (odd index = right edge)
+                // sm: 4 cols → border after cols 0,1,2
+                borderRight: {
+                  xs: i % 2 === 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                  sm: i < STATS.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                },
               }}>
                 <Typography sx={{ fontSize: { xs: '1.6rem', md: '2rem' }, fontWeight: 700, color: '#E05A1B', lineHeight: 1.1 }}>
                   {s.value}
@@ -142,9 +155,9 @@ export default function IndiaMapInteractive() {
                 <Typography sx={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', mt: 0.3 }}>
                   {s.label}
                 </Typography>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Container>
       </Box>
 

@@ -122,6 +122,14 @@ const theme = createTheme({
         },
       },
     },
+    MuiAppBar: {
+      styleOverrides: {
+        // AppBar extends Paper which inherits the global borderRadius override below.
+        // Force it back to 0 so the fixed navbar never shows rounded corners with
+        // the body background bleeding through.
+        root: { borderRadius: 0 },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: { borderRadius: 12 },
