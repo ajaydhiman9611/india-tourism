@@ -1,451 +1,470 @@
 import React, { useRef, useState, useEffect } from 'react';
 import {
-  Container,
-  Grid,
-  TextField,
-  Button,
-  Card,
-  CardHeader,
-  CardContent,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Autocomplete,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  Tooltip
+  Box, Container, Grid, TextField, Button, Paper, Typography,
+  FormControl, InputLabel, Select, MenuItem, Autocomplete,
+  Snackbar, Alert, Tooltip, Divider, Chip, alpha, Skeleton,
+  Fade, LinearProgress
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import ShareIcon from '@mui/icons-material/Share';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import DOMPurify from 'dompurify';
-import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import apicalls from '../helpers/apicalls';
 import axios from 'axios';
 import { constants } from '../helpers/constants';
 import { useAuth } from '../context/AuthContext';
-// Sample data (indianStates and months remain the same)
-const indianStates = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka",
-  "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
-  "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim",
-  "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-  "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+
+const STATES = [
+  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+  "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka",
+  "Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram",
+  "Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana",
+  "Tripura","Uttar Pradesh","Uttarakhand","West Bengal",
+  "Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
 ].sort();
 
-const tripType = ['Backpacking', 'Honeymoon', 'Roadtrip', 'Leisure/Vacation', 'Office Team Outing', 'Business' , 'Adventure', 'Cultural', 'Family Getaway', 'Spa & Wellness', 'Nature & Wildlife'].sort();
+const TRIP_TYPES = [
+  'Adventure','Backpacking','Business','Cultural','Family Getaway',
+  'Honeymoon','Leisure/Vacation','Nature & Wildlife','Office Team Outing',
+  'Roadtrip','Spa & Wellness'
+].sort();
 
-const months = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+const MONTHS = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
 ];
 
-// Custom theme (remains the same)
-const theme = createTheme({
-  palette: {
-    // primary: {
-    //   main: '#ff9933',
-    //   contrastText: '#fff',
-    // },
-    secondary: {
-      main: '#138808',
-    },
-  },
-  typography: {
-    h5: {
-      fontWeight: 600,
-    }
-  }
-});
+// Skeleton shown while the AI is generating
+const ItinerarySkeleton = () => (
+  <Box sx={{ p: { xs: 3, md: 5 } }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 5, gap: 1.5 }}>
+      <AutoAwesomeIcon sx={{ fontSize: 40, color: alpha('#E05A1B', 0.4), animation: 'pulse 1.6s ease-in-out infinite' }} />
+      <Typography variant="h6" color="text.secondary" fontWeight={500}>
+        AI is crafting your personalised itinerary…
+      </Typography>
+      <Typography variant="caption" color="text.disabled">
+        This may take 20–60 seconds
+      </Typography>
+    </Box>
+    {[80, 55, 90, 45, 70, 60].map((w, i) => (
+      <Skeleton key={i} height={i % 3 === 0 ? 28 : 18} width={`${w}%`} sx={{ mb: 1, borderRadius: 1 }} />
+    ))}
+    <Skeleton height={18} width="40%" sx={{ mt: 3, mb: 1, borderRadius: 1 }} />
+    {[65, 85, 50, 75].map((w, i) => (
+      <Skeleton key={i} height={18} width={`${w}%`} sx={{ mb: 1, borderRadius: 1 }} />
+    ))}
+  </Box>
+);
 
-const StyledCard = styled(Card)(({ theme }) => ({
-  backgroundColor: '#ffffff',
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-}));
-
-const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
-  backgroundColor: theme.palette.secondary.main,
-  color: theme.palette.secondary.contrastText || '#fff',
-  '& .MuiCardHeader-title': {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-  },
-}));
-
-
-function ItineraryPlanner() {
+export default function ItineraryPlanner() {
   const { user, authHeader } = useAuth();
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [saveLoading, setSaveLoading] = useState(false);
-  const [shareToken, setShareToken] = useState(null);
-  const [formData, setFormData] = useState({
-    selectedStates: [], // This will now be an array of strings from Autocomplete
-    daysOfItinerary: 3,
-    monthOfVisit: months[0],
+  const resultRef = useRef(null);
+
+  const [form, setForm] = useState({
+    selectedStates: [],
+    daysOfItinerary: 5,
+    monthOfVisit: MONTHS[new Date().getMonth()],
+    tripType: '',
     compulsoryPlace: '',
     reachingPoint: '',
     departingPoint: '',
     otherInfo: '',
-    tripType: ''
   });
+
   const [loading, setLoading] = useState(false);
-  const [itineraryDetails, setItineraryDetails] = useState('');
+  const [genStarted, setGenStarted] = useState(false);  // has user ever submitted?
+  const [genError, setGenError] = useState('');
+  const [itineraryHtml, setItineraryHtml] = useState('');
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [shareToken, setShareToken] = useState(null);
 
-  const itineraryDisplayRef = useRef(null);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "daysOfItinerary") {
-        const numValue = parseInt(value, 10);
-        if (!isNaN(numValue) && numValue >=1 && numValue <=90) {
-            setFormData(prev => ({ ...prev, [name]: numValue }));
-        } else if (value === "") {
-            setFormData(prev => ({ ...prev, [name]: '' }));
-        }
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+  // Scroll to result section as soon as loading starts (section is rendered immediately)
+  useEffect(() => {
+    if (loading && genStarted) {
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
     }
-  };
+  }, [loading, genStarted]);
 
-  // Specific handler for Autocomplete's multiple selection
-  const handleStatesChange = (event, newValue) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedStates: newValue
-    }));
-  };
-
-  const handleTripTypeChange = (event, newValue) => {
-    setFormData(prev => ({
-      ...prev,
-      tripType: newValue
-    }));
-  };
+  // Clean up on unmount so stale state doesn't persist if the user navigates away mid-generation
+  useEffect(() => {
+    return () => {
+      setGenStarted(false);
+      setItineraryHtml('');
+      setGenError('');
+    };
+  }, []);
 
   const handleSubmit = (e) => {
-    setLoading(true);
     e.preventDefault();
-    if (formData.selectedStates.length === 0) {
-        alert("Please select at least one state to visit.");
-        setLoading(false)
-        return;
+    if (!form.selectedStates.length) {
+      setSnackbar({ open: true, message: 'Please select at least one state.', severity: 'warning' });
+      return;
     }
-    if (!formData.daysOfItinerary || formData.daysOfItinerary < 1) {
-        alert("Please enter a valid number of days (minimum 1).");
-        setLoading(false)
-        return;
-    }
-    console.log("Form Submitted:", formData);
-    // setSubmittedData(formData);
+    setLoading(true);
+    setGenStarted(true);
+    setGenError('');
+    setItineraryHtml('');
+    setShareToken(null);
 
-    if (formData) {
-      apicalls.apiHelper({url: '/g_prmpt/test', method: 'POST', data: { promptBody: formData} })
-      .then(response => {
-        console.log("API Response:", response);
-        setItineraryDetails(response.data);
+    apicalls.apiHelper({ url: '/g_prmpt/test', method: 'POST', data: { promptBody: form } })
+      .then(res => {
+        setItineraryHtml(res.data);
       })
-      .catch(error => {console.log(error)})
-      .finally(data => setLoading(false));
-      // setTimeout(() => {
-      //   alert("Trip Planner Details Submitted Successfully!");
-      //   setSubmittedData(null);
-      // }, 2000);
-    }
+      .catch((err) => {
+        const msg = err?.data?.message || err?.message || 'Failed to generate itinerary. Please try again.';
+        setGenError(msg);
+      })
+      .finally(() => setLoading(false));
   };
 
   const handleSave = async () => {
-    if (!itineraryDetails) return;
+    if (!itineraryHtml) return;
     setSaveLoading(true);
     try {
-      const title = `${formData.selectedStates.join(', ')} – ${formData.daysOfItinerary} days (${formData.monthOfVisit})`;
+      const title = `${form.selectedStates.join(', ')} — ${form.daysOfItinerary} days (${form.monthOfVisit})`;
       const res = await axios.post(
         `${constants.API_URL}/itineraries/save`,
-        { title, htmlContent: itineraryDetails, promptDetails: formData },
+        { title, htmlContent: itineraryHtml, promptDetails: form },
         { headers: authHeader() }
       );
-      const token = res.data.data.shareToken;
-      setShareToken(token);
+      setShareToken(res.data.data.shareToken);
       setSnackbar({ open: true, message: 'Itinerary saved!', severity: 'success' });
     } catch (err) {
-      setSnackbar({ open: true, message: 'Failed to save itinerary', severity: 'error' });
-    } finally {
-      setSaveLoading(false);
-    }
+      const msg = err.response?.data?.message || 'Failed to save itinerary.';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally { setSaveLoading(false); }
   };
 
   const handleShare = () => {
-    if (!shareToken) return;
     const url = `${window.location.origin}/itinerary/${shareToken}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setSnackbar({ open: true, message: 'Share link copied to clipboard!', severity: 'success' });
-    });
+    navigator.clipboard.writeText(url)
+      .then(() => setSnackbar({ open: true, message: 'Share link copied!', severity: 'success' }));
   };
 
-  const createMarkup = (htmlString) => {
-    if (!htmlString) {
-      return { __html: '' };
-    }
-
-    let pureHtml = htmlString
-      .replace(/^```html\s*\n/i, '')
-      .replace(/\n\s*```$/, '');
-
-    // Trim any leading/trailing whitespace that might be left
-    pureHtml = pureHtml.trim();
-
-    // 2. Sanitize the HTML
-    const cleanHtml = DOMPurify.sanitize(pureHtml);
-
-    return { __html: cleanHtml };
+  const cleanHtml = (html) => {
+    if (!html) return '';
+    return DOMPurify.sanitize(
+      html.replace(/^```html\s*\n/i, '').replace(/\n\s*```$/, '').trim()
+    );
   };
-
-  // const submitTripPlannerDetails = () => {
-  // }
-
-  useEffect(() => {
-    if (itineraryDetails && itineraryDisplayRef.current) {
-      itineraryDisplayRef.current.scrollIntoView({
-        behavior: 'smooth', // Enables smooth scrolling
-        block: 'start',    // Aligns the top of the element to the top of the visible area
-      });
-      // Optional: Add a class for a subtle fade-in or slide-in animation
-      itineraryDisplayRef.current.classList.add('fade-in-scroll');
-      // Remove the class after animation to allow re-triggering if needed (or manage with state)
-      const timer = setTimeout(() => {
-        if (itineraryDisplayRef.current) { // Check if ref still exists
-            itineraryDisplayRef.current.classList.remove('fade-in-scroll');
-        }
-      }, 1000); // Match animation duration
-
-      return () => clearTimeout(timer); // Cleanup timer on unmount or if effect re-runs
-    }
-  }, [itineraryDetails]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Container sx={{ mt: 4, mb: 5 }}>
-        <StyledCard>
-          <StyledCardHeader title="Plan Your Indian Adventure!" />
-          <CardContent sx={{
-              overflowY: "auto", 
-              flexGrow: 1,
-                
-            }}>
-            <Box component="form" onSubmit={handleSubmit} noValidate>
-              <Grid container spacing={1}>
-                <Grid item size={12}>
-                  <Autocomplete
-                    multiple
-                    id="states-autocomplete"
-                    options={indianStates}
-                    value={formData.selectedStates}
-                    onChange={handleStatesChange}
-                    getOptionLabel={(option) => option} // Since options are strings
-                    isOptionEqualToValue={(option, value) => option === value} // For proper comparison
-                    // disableCloseOnSelect // Keeps the dropdown open after selection
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="outlined"
-                        label="State(s) to Visit"
-                        placeholder="Type or select states"
-                        margin="normal"
-                        required={formData.selectedStates.length === 0} // Dynamic required
-                        helperText="Select one or more states you wish to explore."
-                        error={(formData.selectedStates.length === 0 || formData.selectedStates.length > 2)} // Show error after first submit attempt
-                      />
-                    )}
-                  />
-                </Grid>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
 
-                <Grid item size={3}>
-                  <TextField
-                    label="Days of Itinerary"
-                    type="number"
-                    name="daysOfItinerary"
-                    value={formData.daysOfItinerary}
-                    onChange={handleInputChange}
-                    fullWidth
-                    margin="normal"
-                    required
-                    InputProps={{ inputProps: { min: 1, max: 90 } }}
-                    helperText="Enter total days for your trip (1-90)."
-                  />
-                </Grid>
-                <Grid item size={3}>
-                  <FormControl fullWidth margin="normal" required>
-                    <InputLabel id="month-of-visit-label">Month of Visit</InputLabel>
-                    <Select
-                      labelId="month-of-visit-label"
-                      id="monthOfVisit"
-                      name="monthOfVisit"
-                      value={formData.monthOfVisit}
-                      label="Month of Visit"
-                      onChange={handleInputChange}
-                    >
-                      {months.map(month => (
-                        <MenuItem key={month} value={month}>{month}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+      {/* ── Hero ── */}
+      <Box sx={{
+        background: 'linear-gradient(135deg, #1C1C2E 0%, #2D1B4E 100%)',
+        py: { xs: 6, md: 9 }, mb: 5,
+      }}>
+        <Container maxWidth="md" sx={{ textAlign: 'center' }}>
+          <Typography className="section-label" sx={{ color: '#FFB347', mb: 1 }}>
+            AI-Powered · Personalised
+          </Typography>
+          <Typography variant="h2" sx={{ color: 'white', fontSize: { xs: '2rem', md: '2.8rem' }, mb: 2 }}>
+            Plan your perfect Indian adventure
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '1rem', maxWidth: 500, mx: 'auto' }}>
+            Fill in your preferences and let our AI craft a day-by-day itinerary with hotel suggestions.
+          </Typography>
+        </Container>
+      </Box>
 
-                <Grid item size={6}>
-                  {/* --- MUI Autocomplete for States --- */}
-                  <Autocomplete
-                    // multiple
-                    id="tripType"
-                    options={tripType}
-                    value={formData.tripType}
-                    onChange={handleTripTypeChange}
-                    getOptionLabel={(option) => option} // Since options are strings
-                    isOptionEqualToValue={(option, value) => option === value} // For proper comparison
-                    // disableCloseOnSelect // Keeps the dropdown open after selection
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        variant="outlined"
-                        label="What kind of trip are you planning for?"
-                        placeholder="Select trip type"
-                        margin="normal"
-                        required={formData.tripType.length === 0} // Dynamic required
-                        // helperText="Select one or more states you wish to explore."
-                        // error={(formData.tripType.length === 0 || formData.tripType.length > 2) && submittedData !== null} // Show error after first submit attempt
-                      />
-                    )}
-                  />
-                </Grid>
+      <Container maxWidth="lg" sx={{ pb: 10 }}>
+        <Paper elevation={2} sx={{ borderRadius: 4, overflow: 'hidden' }}>
 
-                <Grid item size={12}>
-                  <TextField
-                    label="Specific Destination(s) to Visit (if any)"
-                    name="compulsoryPlace"
-                    value={formData.compulsoryPlace}
-                    onChange={handleInputChange}
-                    fullWidth
-                    margin="normal"
-                    placeholder="e.g., Taj Mahal, Golden Temple, etc"
-                    helperText="List any specific attractions or cities you must visit in a comma-separated list."
-                  />
-                </Grid>
+          {/* Form header */}
+          <Box sx={{
+            background: 'linear-gradient(135deg, #E05A1B 0%, #F07A45 100%)',
+            px: 4, py: 3,
+            display: 'flex', alignItems: 'center', gap: 2,
+          }}>
+            <FlightTakeoffIcon sx={{ color: 'white', fontSize: 28 }} />
+            <Box>
+              <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>Trip Planner</Typography>
+              <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.88rem' }}>
+                Powered by AI, tailored for you
+              </Typography>
+            </Box>
+          </Box>
 
+          <Box component="form" onSubmit={handleSubmit} sx={{ p: { xs: 3, md: 5 } }}>
+            <Grid container spacing={4}>
 
-                <Grid item size={6}>
-                  <TextField
-                    label="Reaching Station/Airport/Bus Stand"
-                    name="reachingPoint"
-                    value={formData.reachingPoint}
-                    onChange={handleInputChange}
-                    fullWidth
-                    margin="normal"
-                    placeholder="e.g., Indira Gandhi International Airport, Delhi (DEL)"
-                  />
-                </Grid>
-                <Grid item size={6}>
-                  <TextField
-                    label="Departing Station/Airport/Bus Stand"
-                    name="departingPoint"
-                    value={formData.departingPoint}
-                    onChange={handleInputChange}
-                    fullWidth
-                    margin="normal"
-                    placeholder="e.g., Chhatrapati Shivaji Maharaj International Airport, Mumbai (BOM)"
-                  />
-                </Grid>
-
-                <Grid item size={12}>
-                  <TextField
-                    label="Any Other Information or Preferences"
-                    name="otherInfo"
-                    value={formData.otherInfo}
-                    onChange={handleInputChange}
-                    fullWidth
-                    margin="normal"
-                    multiline
-                    rows={4}
-                    placeholder="e.g., Prefer budget travel, interested in wildlife, ..."
-                  />
-                </Grid>
-
-                <Grid item size={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    fullWidth
-                    sx={{ mt: 2, py: 1.5, fontSize: '1.1rem' }}
-                    loading={loading}
-                    loadingIndicator="Loading…"
-                  >
-                    Plan my trip please
-                  </Button>
+              {/* Section 1 — Where & When */}
+              <Grid item style={{ width: "100%"}}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5, width: "80%" }}>
+                  <Typography sx={{ fontSize: '1.1rem' }}>🗺️</Typography>
+                  <Typography variant="h6" fontWeight={600}>Where & When</Typography>
+                  <Divider sx={{ flex: 1, ml: 1 }} />
+                </Box>
+                <Grid container spacing={1.5}>
+                  <Grid item style={{width: "30%"}}>
+                    <Autocomplete
+                      multiple
+                      style={{ width: '100%' }}
+                      options={STATES}
+                      value={form.selectedStates}
+                      onChange={(_, v) => setForm(f => ({ ...f, selectedStates: v }))}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="States to Visit *"
+                          placeholder={form.selectedStates.length ? '' : 'Select one or more states…'}
+                          helperText="Choose the states you'd like to explore"
+                        />
+                      )}
+                      renderTags={(value, getTagProps) =>
+                        value.map((option, index) => (
+                          <Chip
+                            label={option}
+                            size="small"
+                            sx={{ bgcolor: alpha('#E05A1B', 0.1), color: '#E05A1B', border: `1px solid ${alpha('#E05A1B', 0.3)}` }}
+                            {...getTagProps({ index })}
+                          />
+                        ))
+                      }
+                    />
+                  </Grid>
+                  <Grid item style={{width: "15%"}}>
+                    <TextField
+                      label="Duration (days) *"
+                      type="number"
+                      value={form.daysOfItinerary}
+                      onChange={e => {
+                        const v = parseInt(e.target.value, 10);
+                        if (!isNaN(v) && v >= 1 && v <= 90) setForm(f => ({ ...f, daysOfItinerary: v }));
+                      }}
+                      fullWidth
+                      inputProps={{ min: 1, max: 90 }}
+                      helperText="1 – 90 days"
+                    />
+                  </Grid>
+                  <Grid item style={{width: "25%"}}>
+                    <FormControl fullWidth>
+                      <InputLabel>Month of Visit *</InputLabel>
+                      <Select
+                        value={form.monthOfVisit}
+                        label="Month of Visit *"
+                        onChange={e => setForm(f => ({ ...f, monthOfVisit: e.target.value }))}
+                      >
+                        {MONTHS.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item style={{width: "25%"}}>
+                    <Autocomplete
+                      options={TRIP_TYPES}
+                      value={form.tripType}
+                      onChange={(_, v) => setForm(f => ({ ...f, tripType: v || '' }))}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Trip Type" placeholder="e.g. Adventure" />
+                      )}
+                    />
+                  </Grid>
                 </Grid>
               </Grid>
-            </Box>
-            <br/><br/>
-            {itineraryDetails && !loading && (
-              <div
-                ref={itineraryDisplayRef}
-                className="itinerary-content-display"
-                style={{
-                  marginTop: '20px',
-                  padding: '15px',
-                  border: '1px solid #ccc',
-                  borderRadius: '5px',
-                  background: '#f9f9f9'
-                  }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <h3 style={{ margin: 0 }}>Generated Itinerary:</h3>
-                  <Box display="flex" gap={1}>
+
+              {/* Section 2 — Journey Details */}
+              <Grid style={{width: "100%"}} item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                  <Typography sx={{ fontSize: '1.1rem' }}>✈️</Typography>
+                  <Typography variant="h6" fontWeight={600}>Journey Details</Typography>
+                  <Divider sx={{ flex: 1, ml: 1 }} />
+                </Box>
+                <Grid container spacing={2.5}>
+                  <Grid item xs={12}>
+                    <TextField
+                      label="Must-visit places (optional)"
+                      value={form.compulsoryPlace}
+                      onChange={e => setForm(f => ({ ...f, compulsoryPlace: e.target.value }))}
+                      fullWidth
+                      placeholder="e.g. Taj Mahal, Varanasi Ghats, Jaisalmer Fort"
+                      helperText="Specific places you absolutely want included"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Arrival point"
+                      value={form.reachingPoint}
+                      onChange={e => setForm(f => ({ ...f, reachingPoint: e.target.value }))}
+                      fullWidth
+                      placeholder="e.g. Indira Gandhi International Airport, Delhi"
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Departure point"
+                      value={form.departingPoint}
+                      onChange={e => setForm(f => ({ ...f, departingPoint: e.target.value }))}
+                      fullWidth
+                      placeholder="e.g. Chhatrapati Shivaji Airport, Mumbai"
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+
+              {/* Section 3 — Preferences */}
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                  <Typography sx={{ fontSize: '1.1rem' }}>💬</Typography>
+                  <Typography variant="h6" fontWeight={600}>Additional Preferences</Typography>
+                  <Divider sx={{ flex: 1, ml: 1 }} />
+                </Box>
+                <TextField
+                  label="Anything else we should know?"
+                  value={form.otherInfo}
+                  onChange={e => setForm(f => ({ ...f, otherInfo: e.target.value }))}
+                  fullWidth multiline rows={3}
+                  placeholder="Budget preferences, dietary restrictions, mobility needs, interests…"
+                />
+              </Grid>
+
+              {/* Submit */}
+              <Grid item xs={12}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                  disabled={loading}
+                  startIcon={loading ? null : <AutoAwesomeIcon />}
+                  sx={{ py: 1.8, fontSize: '1.1rem', borderRadius: 2 }}
+                >
+                  {loading ? 'Generating your itinerary…' : 'Generate AI Itinerary'}
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+
+        {/* ── Result section — shown as soon as user submits ── */}
+        {genStarted && (
+          <Box ref={resultRef} sx={{ mt: 6 }}>
+            <Paper elevation={2} sx={{ borderRadius: 4, overflow: 'hidden' }}>
+
+              {/* Progress bar while loading */}
+              {loading && (
+                <LinearProgress
+                  color="primary"
+                  sx={{ height: 3 }}
+                />
+              )}
+
+              {/* Header */}
+              <Box sx={{
+                background: loading
+                  ? 'linear-gradient(135deg, #555, #777)'
+                  : genError
+                    ? 'linear-gradient(135deg, #c0392b, #e74c3c)'
+                    : 'linear-gradient(135deg, #1B7A3E, #2DA357)',
+                px: 4, py: 3,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                transition: 'background 0.6s ease',
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  {genError
+                    ? <ErrorOutlineIcon sx={{ color: 'white' }} />
+                    : <AutoAwesomeIcon sx={{ color: 'white' }} />
+                  }
+                  <Typography variant="h5" sx={{ color: 'white', fontWeight: 700 }}>
+                    {loading
+                      ? 'Generating your itinerary…'
+                      : genError
+                        ? 'Generation failed'
+                        : 'Your Personalised Itinerary'
+                    }
+                  </Typography>
+                </Box>
+
+                {/* Save / Share buttons — only when we have content */}
+                {!loading && !genError && itineraryHtml && (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
                       variant="outlined"
+                      size="small"
                       startIcon={<SaveIcon />}
                       onClick={handleSave}
                       disabled={saveLoading}
-                      size="small"
+                      sx={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white',
+                        '&:hover': { borderColor: 'white', background: 'rgba(255,255,255,0.1)' } }}
                     >
                       {saveLoading ? 'Saving…' : 'Save'}
                     </Button>
                     {shareToken && (
-                      <Tooltip title="Copy share link">
+                      <Tooltip title="Copy shareable link">
                         <Button
                           variant="outlined"
+                          size="small"
                           startIcon={<ShareIcon />}
                           onClick={handleShare}
-                          size="small"
-                          color="secondary"
+                          sx={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white',
+                            '&:hover': { borderColor: 'white', background: 'rgba(255,255,255,0.1)' } }}
                         >
                           Share
                         </Button>
                       </Tooltip>
                     )}
                   </Box>
+                )}
+              </Box>
+
+              {/* Body */}
+              {loading && <ItinerarySkeleton />}
+
+              {!loading && genError && (
+                <Box sx={{ p: { xs: 3, md: 5 } }}>
+                  <Alert
+                    severity="error"
+                    action={
+                      <Button color="inherit" size="small" onClick={handleSubmit}>
+                        Retry
+                      </Button>
+                    }
+                  >
+                    {genError}
+                  </Alert>
                 </Box>
-                <div dangerouslySetInnerHTML={createMarkup(itineraryDetails)} />
-              </div>
-            )}
-            <Snackbar
-              open={snackbar.open}
-              autoHideDuration={3000}
-              onClose={() => setSnackbar(s => ({ ...s, open: false }))}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-              <Alert severity={snackbar.severity} onClose={() => setSnackbar(s => ({ ...s, open: false }))}>
-                {snackbar.message}
-              </Alert>
-            </Snackbar>
-          </CardContent>
-        </StyledCard>
+              )}
+
+              {!loading && !genError && itineraryHtml && (
+                <Fade in timeout={600}>
+                  <Box sx={{ p: { xs: 3, md: 5 } }}>
+                    <Box
+                      className="itinerary-html-output"
+                      dangerouslySetInnerHTML={{ __html: cleanHtml(itineraryHtml) }}
+                    />
+                  </Box>
+                </Fade>
+              )}
+            </Paper>
+          </Box>
+        )}
       </Container>
-    </ThemeProvider>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3500}
+        onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={snackbar.severity} onClose={() => setSnackbar(s => ({ ...s, open: false }))}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50%       { opacity: 1;   transform: scale(1.15); }
+        }
+      `}</style>
+    </Box>
   );
 }
-
-export default ItineraryPlanner;
