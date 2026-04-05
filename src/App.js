@@ -299,15 +299,26 @@ const App = () => {
                   </Menu>
                 </>
               ) : (
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: { xs: 0.5, sm: 1 }, alignItems: 'center' }}>
                   <Button onClick={() => navigate('/login')} size="small"
-                    sx={{ color: 'rgba(255,255,255,0.85)', borderRadius: '999px', px: 2,
-                      '&:hover': { background: 'rgba(255,255,255,0.1)' } }}>
+                    sx={{
+                      color: 'rgba(255,255,255,0.9)', borderRadius: '999px',
+                      px: { xs: 1.5, sm: 2 }, py: { xs: 0.6, sm: 0.75 },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      whiteSpace: 'nowrap', minWidth: 0,
+                      '&:hover': { background: 'rgba(255,255,255,0.1)' },
+                    }}>
                     Sign In
                   </Button>
+                  {/* Hide Register on xs — reachable from login page */}
                   <Button onClick={() => navigate('/register')} variant="outlined" size="small"
-                    sx={{ borderRadius: '999px', px: 2, borderColor: 'rgba(255,255,255,0.3)', color: 'white',
-                      '&:hover': { borderColor: '#E05A1B', background: alpha('#E05A1B', 0.1) } }}>
+                    sx={{
+                      display: { xs: 'none', sm: 'inline-flex' },
+                      borderRadius: '999px', px: 2,
+                      borderColor: 'rgba(255,255,255,0.3)', color: 'white',
+                      whiteSpace: 'nowrap',
+                      '&:hover': { borderColor: '#E05A1B', background: alpha('#E05A1B', 0.1) },
+                    }}>
                     Register
                   </Button>
                 </Box>
