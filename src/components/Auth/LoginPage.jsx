@@ -243,7 +243,7 @@ const LoginPage = () => {
   const onSuccess  = () => navigate('/')
 
   return (
-    <Grid container sx={{ height: 'calc(100vh - 68px)', overflow: 'hidden' }}>
+    <Grid container sx={{ height: 'calc(100vh - 68px - env(safe-area-inset-top))', overflow: 'hidden' }}>
       <LeftPanel />
 
       {/* Right — form panel */}

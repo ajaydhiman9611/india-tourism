@@ -152,8 +152,11 @@ const App = () => {
               ? 'linear-gradient(to bottom, rgba(28,28,46,0.95), rgba(28,28,46,0.85))'
               : 'rgba(28,28,46,0.97)',
             backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
             borderBottom: '1px solid rgba(255,255,255,0.08)',
             height: HEADER_HEIGHT,
+            paddingTop: 'env(safe-area-inset-top)',
+            boxSizing: 'content-box',
           }}
         >
           <Container maxWidth="xl" sx={{ px: { xs: 1.5, sm: 3 } }}>
@@ -316,7 +319,7 @@ const App = () => {
       </HideOnScroll>
 
       {/* Spacer — only on non-home pages */}
-      {!isHome && <Box sx={{ height: HEADER_HEIGHT }} />}
+      {!isHome && <Box sx={{ height: `calc(${HEADER_HEIGHT}px + env(safe-area-inset-top))` }} />}
 
       <Routes>
         <Route path="/" element={<IndiaMap />} />

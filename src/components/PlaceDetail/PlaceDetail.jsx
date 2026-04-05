@@ -4,7 +4,8 @@ import axios from 'axios'
 import {
   Box, Container, Typography, Chip, Grid, Paper,
   Button, Rating, TextField, Divider, Alert,
-  IconButton, Skeleton, Avatar, alpha
+  IconButton, Skeleton, Avatar, alpha,
+  Modal, Fade, Backdrop
 } from '@mui/material'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
@@ -14,8 +15,12 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import StarIcon from '@mui/icons-material/Star'
+import CloseIcon from '@mui/icons-material/Close'
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { constants } from '../../helpers/constants'
 import { useAuth } from '../../context/AuthContext'
+import TripDistancePlanner from './TripDistancePlanner'
 
 const PlaceDetail = () => {
   const { placeId } = useParams()
@@ -33,6 +38,8 @@ const PlaceDetail = () => {
   const [reviewLoading, setReviewLoading] = useState(false)
   const [saveToggleLoading, setSaveToggleLoading] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIdx, setLightboxIdx] = useState(0)
 
   useEffect(() => {
     axios.get(`${constants.API_URL}/places/${placeId}`)
@@ -133,9 +140,10 @@ const PlaceDetail = () => {
           component="img"
           src={selectedImg || place.thumbImage}
           alt={place.name}
+          onClick={() => { setLightboxIdx(allImages.indexOf(selectedImg)); setLightboxOpen(true) }}
           sx={{
             width: '100%', height: '100%', objectFit: 'cover',
-            opacity: 0.8, display: 'block',
+            opacity: 0.8, display: 'block', cursor: 'pointer',
           }}
           onError={e => { e.target.style.opacity = 0 }}
         />
@@ -197,7 +205,11 @@ const PlaceDetail = () => {
               {allImages.map((img, i) => (
                 <Box
                   key={i}
-                  onClick={() => setSelectedImg(img)}
+                  onClick={() => {
+                    setSelectedImg(img)
+                    setLightboxIdx(i)
+                    setLightboxOpen(true)
+                  }}
                   sx={{
                     flexShrink: 0, cursor: 'pointer',
                     borderRadius: 1.5, overflow: 'hidden',
@@ -261,6 +273,9 @@ const PlaceDetail = () => {
                 <Chip icon={<StarIcon />} label="Featured" color="secondary" />
               )}
             </Box>
+
+            {/* Trip Distance Planner */}
+            <TripDistancePlanner place={place} />
 
             <Divider sx={{ mb: 4 }} />
 
@@ -385,6 +400,52 @@ const PlaceDetail = () => {
 
         </Grid>
       </Container>
+
+      {/* Lightbox */}
+      <Modal
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{ backdrop: { sx: { bgcolor: 'rgba(0,0,0,0.92)' } } }}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1400 }}
+      >
+        <Fade in={lightboxOpen}>
+          <Box sx={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh', outline: 'none' }}>
+            {/* Close */}
+            <IconButton onClick={() => setLightboxOpen(false)}
+              sx={{ position: 'absolute', top: -44, right: 0, color: 'white', zIndex: 1 }}>
+              <CloseIcon />
+            </IconButton>
+            {/* Counter */}
+            <Typography sx={{ position: 'absolute', top: -40, left: 0, color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>
+              {lightboxIdx + 1} / {allImages.length}
+            </Typography>
+            {/* Image */}
+            <Box component="img"
+              src={allImages[lightboxIdx]}
+              alt=""
+              sx={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: 1, display: 'block' }}
+            />
+            {/* Prev */}
+            {allImages.length > 1 && (
+              <IconButton onClick={() => setLightboxIdx(i => (i - 1 + allImages.length) % allImages.length)}
+                sx={{ position: 'absolute', left: -56, top: '50%', transform: 'translateY(-50%)', color: 'white',
+                  background: 'rgba(255,255,255,0.1)', '&:hover': { background: 'rgba(255,255,255,0.2)' } }}>
+                <ArrowBackIosNewIcon />
+              </IconButton>
+            )}
+            {/* Next */}
+            {allImages.length > 1 && (
+              <IconButton onClick={() => setLightboxIdx(i => (i + 1) % allImages.length)}
+                sx={{ position: 'absolute', right: -56, top: '50%', transform: 'translateY(-50%)', color: 'white',
+                  background: 'rgba(255,255,255,0.1)', '&:hover': { background: 'rgba(255,255,255,0.2)' } }}>
+                <ArrowForwardIosIcon />
+              </IconButton>
+            )}
+          </Box>
+        </Fade>
+      </Modal>
     </Box>
   )
 }
