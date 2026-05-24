@@ -11,7 +11,8 @@ import SearchPage from './components/Search/SearchPage';
 import PlaceDetail from './components/PlaceDetail/PlaceDetail';
 import SharedItinerary from './components/SharedItinerary/SharedItinerary';
 import AdminDashboard from './components/Admin/AdminDashboard';
-import MyItinerariesDialog from './components/MyItineraries/MyItinerariesDialog';
+import MyItinerariesDialog from './components/MyItineraries/MyItinerariesDialog'
+import CrowdPredictor from './components/CrowdPredictor/CrowdPredictor';
 import {
   AppBar, Toolbar, Box, Container, Button, IconButton,
   InputBase, Avatar, Menu, MenuItem, Divider, Tooltip,
@@ -22,7 +23,8 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import MapIcon from '@mui/icons-material/Map';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
+import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff'
+import PeopleIcon        from '@mui/icons-material/People';
 import BookmarksIcon from '@mui/icons-material/Bookmarks';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useAuth } from './context/AuthContext';
@@ -232,6 +234,28 @@ const App = () => {
                 </Button>
               )}
 
+              {/* Crowd Predictor */}
+              {isMobile ? (
+                <Tooltip title="Crowd Predictor">
+                  <IconButton onClick={() => navigate('/crowd-predictor')} size="small"
+                    sx={{ color: 'rgba(255,255,255,0.7)', '&:hover': { color: '#E05A1B' } }}>
+                    <PeopleIcon />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                <Button onClick={() => navigate('/crowd-predictor')}
+                  startIcon={<PeopleIcon sx={{ fontSize: '1rem !important' }} />}
+                  variant="outlined" size="small"
+                  sx={{
+                    borderRadius: '999px', px: 2, py: 0.8, flexShrink: 0,
+                    borderColor: 'rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.85)',
+                    whiteSpace: 'nowrap',
+                    '&:hover': { borderColor: '#E05A1B', background: 'rgba(224,90,27,0.1)', color: '#E05A1B' },
+                  }}>
+                  Crowd Predictor
+                </Button>
+              )}
+
               {user?.isAdmin && !isMobile && (
                 <Tooltip title="Admin Dashboard">
                   <IconButton onClick={() => navigate('/admin')} size="small"
@@ -345,6 +369,7 @@ const App = () => {
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/crowd-predictor" element={<CrowdPredictor />} />
       </Routes>
 
       {/* My Itineraries dialog */}
